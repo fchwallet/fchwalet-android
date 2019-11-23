@@ -25,6 +25,7 @@ import com.breadwallet.wallet.abstracts.BalanceUpdateListener;
 import com.breadwallet.wallet.wallets.bitcoin.BaseBitcoinWalletManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBchManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBitcoinManager;
+import com.breadwallet.wallet.wallets.bitcoin.WalletBsvManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletEthManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletTokenManager;
 import com.platform.entities.TokenListMetaData;
@@ -109,6 +110,9 @@ public class WalletsMaster implements WalletEthManager.OnTokenLoadedListener {
                 } else if (enabled.symbol.equalsIgnoreCase(BaseBitcoinWalletManager.BITCASH_CURRENCY_CODE)) {
                     //BCH wallet
                     mWallets.add(WalletBchManager.getInstance(app));
+                } else if (enabled.symbol.equalsIgnoreCase(BaseBitcoinWalletManager.BSV_CURRENCY_CODE)) {
+                    //BSV wallet
+                    mWallets.add(WalletBsvManager.getInstance(app));
                 } else if (enabled.symbol.equalsIgnoreCase(WalletEthManager.ETH_CURRENCY_CODE)) {
                     //ETH wallet
                     mWallets.add(ethWallet);
@@ -158,9 +162,13 @@ public class WalletsMaster implements WalletEthManager.OnTokenLoadedListener {
         if (WalletBitcoinManager.BITCASH_CURRENCY_CODE.equalsIgnoreCase(currencyCode)) {
             return WalletBchManager.getInstance(app);
         }
+        if (WalletBsvManager.BSV_CURRENCY_CODE.equalsIgnoreCase(currencyCode)) {
+            return WalletBsvManager.getInstance(app);
+        }
         if (WalletEthManager.ETH_CURRENCY_CODE.equalsIgnoreCase(currencyCode)) {
             return WalletEthManager.getInstance(app.getApplicationContext());
-        } else if (isCurrencyCodeErc20(app, currencyCode)) {
+        }
+        else if (isCurrencyCodeErc20(app, currencyCode)) {
             return WalletTokenManager.getTokenWalletByIso(app, currencyCode);
         }
         return null;

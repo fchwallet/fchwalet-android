@@ -82,7 +82,9 @@ public class ManageTokenListAdapter extends RecyclerView.Adapter<ManageTokenList
                 holder.tokenIcon.setVisibility(View.GONE);
                 holder.tokenLetter.setVisibility(View.VISIBLE);
                 holder.tokenLetter.setText(currencyCode.substring(0, 1).toUpperCase());
-                iconDrawable.setColor(Color.parseColor(TokenUtil.getTokenStartColor(currencyCode)));
+                String colorStr = TokenUtil.getTokenStartColor(currencyCode);
+                if (!Utils.isNullOrEmpty(colorStr))
+                    iconDrawable.setColor(Color.parseColor(colorStr));
             }
 
             holder.tokenName.setText(mTokens.get(position).name);

@@ -24,6 +24,7 @@ import com.breadwallet.wallet.abstracts.BaseWalletManager;
 import com.breadwallet.wallet.wallets.bitcoin.BaseBitcoinWalletManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBchManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBitcoinManager;
+import com.breadwallet.wallet.wallets.bitcoin.WalletBsvManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletEthManager;
 
 import java.io.UnsupportedEncodingException;
@@ -223,10 +224,16 @@ public class CryptoUriParser {
         if (Utils.isNullOrEmpty(uri.getScheme())) {
             WalletBitcoinManager walletBitcoinManager = WalletBitcoinManager.getInstance(context);
             WalletBchManager walletBchManager = WalletBchManager.getInstance(context);
+            WalletBsvManager walletBsvManager = WalletBsvManager.getInstance(context);
             String potentialBchAddress = walletBchManager.undecorateAddress(walletBchManager.getScheme() + ":" + address);
             if (walletBitcoinManager.isAddressValid(address)) {
-                builder.setCurrencyCode(BaseBitcoinWalletManager.BITCOIN_CURRENCY_CODE);
-                builder.setScheme(walletBitcoinManager.getScheme());
+                if (currentWallet.getCurrencyCode().equalsIgnoreCase(BaseBitcoinWalletManager.BSV_CURRENCY_CODE)) {
+                    builder.setCurrencyCode(BaseBitcoinWalletManager.BSV_CURRENCY_CODE);
+                    builder.setScheme(walletBsvManager.getScheme());
+                } else {
+                    builder.setCurrencyCode(BaseBitcoinWalletManager.BITCOIN_CURRENCY_CODE);
+                    builder.setScheme(walletBitcoinManager.getScheme());
+                }
             } else if (!Utils.isNullOrEmpty(potentialBchAddress)) {
                 builder.setCurrencyCode(BaseBitcoinWalletManager.BITCASH_CURRENCY_CODE);
                 builder.setScheme(walletBchManager.getScheme());

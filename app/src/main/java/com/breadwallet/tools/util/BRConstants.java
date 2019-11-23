@@ -2,6 +2,7 @@ package com.breadwallet.tools.util;
 
 import com.breadwallet.wallet.wallets.bitcoin.WalletBchManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBitcoinManager;
+import com.breadwallet.wallet.wallets.bitcoin.WalletBsvManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletEthManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletTokenManager;
 import com.google.common.collect.ImmutableList;
@@ -40,10 +41,11 @@ public final class BRConstants {
             .Builder<TokenListMetaData.TokenInfo>()
             .add(new TokenListMetaData.TokenInfo(WalletBitcoinManager.BITCOIN_CURRENCY_CODE, false, null))
             .add(new TokenListMetaData.TokenInfo(WalletBchManager.BITCASH_CURRENCY_CODE, false, null))
+            .add(new TokenListMetaData.TokenInfo(WalletBsvManager.BSV_CURRENCY_CODE, false, null))
             .add(new TokenListMetaData.TokenInfo(WalletEthManager.ETH_CURRENCY_CODE, false, null))
-            .add(new TokenListMetaData.TokenInfo(WalletTokenManager.BRD_CURRENCY_CODE, true, WalletTokenManager.BRD_CONTRACT_ADDRESS))
-            .add(new TokenListMetaData.TokenInfo(WalletTokenManager.DAI_CURRENCY_CODE, true, WalletTokenManager.DAI_CONTRACT_ADDRESS))
-            .add(new TokenListMetaData.TokenInfo(WalletTokenManager.TUSD_CURRENCY_CODE, true, WalletTokenManager.TUSD_CONTRACT_ADDRESS))
+//            .add(new TokenListMetaData.TokenInfo(WalletTokenManager.BRD_CURRENCY_CODE, true, WalletTokenManager.BRD_CONTRACT_ADDRESS))
+//            .add(new TokenListMetaData.TokenInfo(WalletTokenManager.DAI_CURRENCY_CODE, true, WalletTokenManager.DAI_CONTRACT_ADDRESS))
+//            .add(new TokenListMetaData.TokenInfo(WalletTokenManager.TUSD_CURRENCY_CODE, true, WalletTokenManager.TUSD_CONTRACT_ADDRESS))
             .build();
     /**
      * Boolean values as Strings.
