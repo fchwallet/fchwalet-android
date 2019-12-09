@@ -248,7 +248,7 @@ object BRSharedPrefs {
     //if the user prefers all in crypto units, not fiat currencies
     @JvmStatic
     fun isCryptoPreferred(context: Context? = null): Boolean =
-            brdPrefs.getBoolean(IS_CRYPTO_PREFERRED, false)
+            brdPrefs.getBoolean(IS_CRYPTO_PREFERRED, true)
 
     //if the user prefers all in crypto units, not fiat currencies
     @JvmStatic

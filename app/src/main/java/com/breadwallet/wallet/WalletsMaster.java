@@ -26,6 +26,7 @@ import com.breadwallet.wallet.wallets.bitcoin.BaseBitcoinWalletManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBchManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBitcoinManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBsvManager;
+import com.breadwallet.wallet.wallets.bitcoin.WalletXsvManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletEthManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletTokenManager;
 import com.platform.entities.TokenListMetaData;
@@ -113,6 +114,9 @@ public class WalletsMaster implements WalletEthManager.OnTokenLoadedListener {
                 } else if (enabled.symbol.equalsIgnoreCase(BaseBitcoinWalletManager.BSV_CURRENCY_CODE)) {
                     //BSV wallet
                     mWallets.add(WalletBsvManager.getInstance(app));
+                } else if (enabled.symbol.equalsIgnoreCase(BaseBitcoinWalletManager.XSV_CURRENCY_CODE)) {
+                    //XSV wallet
+                    mWallets.add(WalletXsvManager.getInstance(app));
                 } else if (enabled.symbol.equalsIgnoreCase(WalletEthManager.ETH_CURRENCY_CODE)) {
                     //ETH wallet
                     mWallets.add(ethWallet);
@@ -165,6 +169,9 @@ public class WalletsMaster implements WalletEthManager.OnTokenLoadedListener {
         if (WalletBsvManager.BSV_CURRENCY_CODE.equalsIgnoreCase(currencyCode)) {
             return WalletBsvManager.getInstance(app);
         }
+        if (WalletXsvManager.XSV_CURRENCY_CODE.equalsIgnoreCase(currencyCode)) {
+            return WalletXsvManager.getInstance(app);
+        }
         if (WalletEthManager.ETH_CURRENCY_CODE.equalsIgnoreCase(currencyCode)) {
             return WalletEthManager.getInstance(app.getApplicationContext());
         }
@@ -185,6 +192,13 @@ public class WalletsMaster implements WalletEthManager.OnTokenLoadedListener {
         List<BaseWalletManager> list = new ArrayList<>(getAllWallets(app));
         for (BaseWalletManager wallet : list) {
             BigDecimal fiatBalance = wallet.getFiatBalance(app);
+
+            if (wallet.getName().equalsIgnoreCase("xsv")) {
+                fiatBalance = wallet.getBalance();
+                fiatBalance = fiatBalance.divide(new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS));
+                fiatBalance = fiatBalance.multiply(new BigDecimal(0.142857));
+            }
+
             if (fiatBalance != null) {
                 totalBalance = totalBalance.add(fiatBalance);
             }

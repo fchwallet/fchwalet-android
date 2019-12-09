@@ -85,6 +85,7 @@ public abstract class BaseBitcoinWalletManager extends BRCoreWalletManager imple
     public static final String BITCOIN_CURRENCY_CODE = "BTC";
     public static final String BITCASH_CURRENCY_CODE = "BCH";
     public static final String BSV_CURRENCY_CODE = "BSV";
+    public static final String XSV_CURRENCY_CODE = "XSV";
 
     private WalletSettingsConfiguration mSettingsConfig;
 
@@ -687,9 +688,22 @@ public abstract class BaseBitcoinWalletManager extends BRCoreWalletManager imple
         Context app = BreadApp.getBreadContext();
         if (app == null) return;
         if (replace) MerkleBlockDataSource.getInstance(app).deleteAllBlocks(app, getCurrencyCode());
-        BlockEntity[] entities = new BlockEntity[blocks.length];
+//        BlockEntity[] entities = new BlockEntity[blocks.length];
+//        for (int i = 0; i < entities.length; i++) {
+//            entities[i] = new BlockEntity(blocks[i].serialize(), (int) blocks[i].getHeight());
+//        }
+
+        int length = blocks.length;
+        if (getCurrencyCode().equalsIgnoreCase("xsv")) {
+            length = 1;
+        }
+        BlockEntity[] entities = new BlockEntity[length];
         for (int i = 0; i < entities.length; i++) {
-            entities[i] = new BlockEntity(blocks[i].serialize(), (int) blocks[i].getHeight());
+            if (getCurrencyCode().equalsIgnoreCase("xsv")) {
+                entities[i] = new BlockEntity(blocks[i].serializeXsv(), (int) blocks[i].getHeight());
+            } else {
+                entities[i] = new BlockEntity(blocks[i].serialize(), (int) blocks[i].getHeight());
+            }
         }
 
         MerkleBlockDataSource.getInstance(app).putMerkleBlocks(app, getCurrencyCode(), entities);

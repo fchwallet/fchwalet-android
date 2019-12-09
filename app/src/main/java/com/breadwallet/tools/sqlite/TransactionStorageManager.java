@@ -27,7 +27,8 @@ public class TransactionStorageManager {
 
         }
 
-        if (iso.equalsIgnoreCase("btc") || iso.equalsIgnoreCase("bch") || iso.equalsIgnoreCase("bsv")) {
+        if (iso.equalsIgnoreCase("btc") || iso.equalsIgnoreCase("bch") ||
+                iso.equalsIgnoreCase("bsv") || iso.equalsIgnoreCase("xsv")) {
             BRTransactionEntity result = BtcBchTransactionDataStore.getInstance(app).putTransaction(app, iso, tx);
             return result != null;
         }
@@ -44,7 +45,8 @@ public class TransactionStorageManager {
 
         }
 
-        if (iso.equalsIgnoreCase("btc") || iso.equalsIgnoreCase("bch") || iso.equalsIgnoreCase("bsv")) {
+        if (iso.equalsIgnoreCase("btc") || iso.equalsIgnoreCase("bch") ||
+                iso.equalsIgnoreCase("bsv") || iso.equalsIgnoreCase("xsv")) {
             return BtcBchTransactionDataStore.getInstance(app).getAllTransactions(app, iso);
         }
 
@@ -60,7 +62,8 @@ public class TransactionStorageManager {
 
         }
 
-        if (iso.equalsIgnoreCase("btc") || iso.equalsIgnoreCase("bch") || iso.equalsIgnoreCase("bsv")) {
+        if (iso.equalsIgnoreCase("btc") || iso.equalsIgnoreCase("bch") ||
+                iso.equalsIgnoreCase("bsv") || iso.equalsIgnoreCase("xsv")) {
             return BtcBchTransactionDataStore.getInstance(app).updateTransaction(app, iso, tx);
 
         }
@@ -77,7 +80,8 @@ public class TransactionStorageManager {
 
         }
 
-        if (iso.equalsIgnoreCase("btc") || iso.equalsIgnoreCase("bch") || iso.equalsIgnoreCase("bsv")) {
+        if (iso.equalsIgnoreCase("btc") || iso.equalsIgnoreCase("bch") ||
+                iso.equalsIgnoreCase("bsv") || iso.equalsIgnoreCase("xsv")) {
             BtcBchTransactionDataStore.getInstance(app).deleteTxByHash(app, iso, hash);
             return true;
         }

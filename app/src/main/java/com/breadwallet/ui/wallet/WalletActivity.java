@@ -62,7 +62,9 @@ import com.breadwallet.wallet.wallets.ethereum.WalletEthManager;
 import com.platform.HTTPServer;
 import com.platform.util.AppReviewPromptManager;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -175,6 +177,7 @@ public class WalletActivity extends BRActivity implements InternetManager.Connec
         mAppBar = findViewById(R.id.appbar);
         mNotificationBar = findViewById(R.id.notification_bar);
         mChartLabel = findViewById(R.id.chart_label);
+        mChartLabel.setText("0.00%");
 
         mOneDay = findViewById(R.id.one_day);
         mOneDay.setOnClickListener(view -> {
@@ -227,7 +230,12 @@ public class WalletActivity extends BRActivity implements InternetManager.Connec
                 mBalanceSecondary.setText(balance.getCryptoBalance());
 
                 if (Utils.isNullOrZero(balance.getExchangeRate())) {
-                    mCurrencyPriceUsd.setVisibility(View.INVISIBLE);
+//                    mCurrencyPriceUsd.setVisibility(View.INVISIBLE);
+                    // added by Chen Fei, for XSV
+                    BigDecimal exchangeRate = new BigDecimal(0.142857);
+                    BigDecimal fiatBalance = new BigDecimal(balance.getCryptoBalance()).multiply(exchangeRate);
+                    mCurrencyPriceUsd.setText("$0.14");
+                    mBalancePrimary.setText("$" + new DecimalFormat("0.00").format(fiatBalance));
                 } else {
                     mCurrencyPriceUsd.setVisibility(View.VISIBLE);
                 }

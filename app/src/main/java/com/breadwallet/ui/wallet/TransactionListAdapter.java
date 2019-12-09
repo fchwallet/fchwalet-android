@@ -48,10 +48,12 @@ import com.breadwallet.tools.util.CurrencyUtils;
 import com.breadwallet.tools.util.Utils;
 import com.breadwallet.wallet.WalletsMaster;
 import com.breadwallet.wallet.abstracts.BaseWalletManager;
+import com.breadwallet.wallet.wallets.bitcoin.BaseBitcoinWalletManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletEthManager;
 import com.platform.entities.TxMetaData;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -161,6 +163,12 @@ public class TransactionListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         if (!received && amount != null) {
             amount = amount.negate();
         }
+
+        if (wm.getName().equalsIgnoreCase("xsv") && amount == null) {
+            BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
+            amount = cryptoAmount.divide(sato).multiply(new BigDecimal(0.142857));
+        }
+
         String formattedAmount = CurrencyUtils.getFormattedAmount(mContext, preferredCurrencyCode, amount, wm.getUiConfiguration().getMaxDecimalPlacesForUi(), true);
         convertView.getTransactionAmount().setText(formattedAmount);
         int blockHeight = item.getBlockHeight();

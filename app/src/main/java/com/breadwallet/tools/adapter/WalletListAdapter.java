@@ -24,6 +24,7 @@ import com.breadwallet.tools.util.TokenUtil;
 import com.breadwallet.tools.util.Utils;
 import com.breadwallet.wallet.WalletsMaster;
 import com.breadwallet.wallet.configs.WalletUiConfiguration;
+import com.breadwallet.wallet.wallets.bitcoin.BaseBitcoinWalletManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletTokenManager;
 import com.squareup.picasso.Picasso;
 
@@ -146,6 +147,12 @@ public class WalletListAdapter extends RecyclerView.Adapter<WalletListAdapter.Wa
             BigDecimal bigExchangeRate = wallet.getExchangeRate();
             BigDecimal bigFiatBalance = wallet.getFiatBalance();
 
+            if (name.equalsIgnoreCase("xsv")) {
+                bigExchangeRate = new BigDecimal(0.142857);
+                BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
+                bigFiatBalance = bigExchangeRate.multiply(wallet.getCryptoBalance()).divide(sato);
+            }
+
             // Format numeric data
             String exchangeRate = CurrencyUtils.getFormattedAmount(mContext, BRSharedPrefs.getPreferredFiatIso(mContext), bigExchangeRate);
             String fiatBalance = CurrencyUtils.getFormattedAmount(mContext, BRSharedPrefs.getPreferredFiatIso(mContext), bigFiatBalance);
@@ -178,6 +185,11 @@ public class WalletListAdapter extends RecyclerView.Adapter<WalletListAdapter.Wa
             decoratedHolderView.mPriceChange.setVisibility(priceChange != null ? View.VISIBLE : View.INVISIBLE);
             if (priceChange != null) {
                 decoratedHolderView.mPriceChange.setText(priceChange.getPercentageChange());
+            }
+
+            if (name.equalsIgnoreCase("xsv")) {
+                decoratedHolderView.mPriceChange.setVisibility(View.VISIBLE);
+                decoratedHolderView.mPriceChange.setText("0.00%");
             }
 
             // Get icon for currency

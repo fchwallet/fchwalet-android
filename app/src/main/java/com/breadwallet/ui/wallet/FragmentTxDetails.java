@@ -222,8 +222,16 @@ public class FragmentTxDetails extends DialogFragment {
 
                 }
 
-                BigDecimal fee = isCryptoPreferred ? rawFee.abs() : walletManager.getFiatForSmallestCrypto(app, rawFee, null).abs();
-                BigDecimal rawTotalSent = mTransaction.getAmount().abs().add(rawFee.abs());
+//                BigDecimal fee = isCryptoPreferred ? rawFee.abs() : walletManager.getFiatForSmallestCrypto(app, rawFee, null).abs();
+//                BigDecimal rawTotalSent = mTransaction.getAmount().abs().add(rawFee.abs());
+                // added by Chen Fei, for XSV
+                BigDecimal fee = new BigDecimal(0);
+                BigDecimal rawTotalSent = rawFee.abs();
+                if (!walletManager.getName().equalsIgnoreCase("xsv")) {
+                    fee = isCryptoPreferred ? rawFee.abs() : walletManager.getFiatForSmallestCrypto(app, rawFee, null).abs();
+                    rawTotalSent = mTransaction.getAmount().abs().add(rawFee.abs());
+                }
+
                 BigDecimal totalSent = isCryptoPreferred ? rawTotalSent : walletManager.getFiatForSmallestCrypto(app, rawTotalSent, null);
                 mFeeSecondary.setText(CurrencyUtils.getFormattedAmount(app, iso, totalSent));
                 mFeePrimary.setText(CurrencyUtils.getFormattedAmount(app, iso, fee));

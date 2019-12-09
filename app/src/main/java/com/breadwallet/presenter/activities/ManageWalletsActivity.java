@@ -18,6 +18,7 @@ import com.breadwallet.wallet.WalletsMaster;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBchManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBitcoinManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBsvManager;
+import com.breadwallet.wallet.wallets.bitcoin.WalletXsvManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletEthManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletTokenManager;
 import com.platform.entities.TokenListMetaData;
@@ -67,7 +68,7 @@ public class ManageWalletsActivity extends BaseSettingsActivity implements OnSta
             String tokenSymbol = mTokens.get(i).symbol;
 
             if (!tokenSymbol.equalsIgnoreCase(WalletBitcoinManager.BITCOIN_CURRENCY_CODE) && !tokenSymbol.equalsIgnoreCase(WalletBchManager.BITCASH_CURRENCY_CODE) &&
-                    !tokenSymbol.equalsIgnoreCase(WalletBsvManager.BSV_CURRENCY_CODE) &&
+                    !tokenSymbol.equalsIgnoreCase(WalletBsvManager.BSV_CURRENCY_CODE) && !tokenSymbol.equalsIgnoreCase(WalletXsvManager.XSV_CURRENCY_CODE) &&
                     !tokenSymbol.equalsIgnoreCase(WalletEthManager.ETH_CURRENCY_CODE) && !tokenSymbol.equalsIgnoreCase(WalletTokenManager.BRD_CURRENCY_CODE)) {
 
                 BREthereumToken tk = WalletEthManager.getInstance(getApplicationContext()).node.lookupToken(info.contractAddress);
@@ -85,6 +86,8 @@ public class ManageWalletsActivity extends BaseSettingsActivity implements OnSta
                 tokenItem = new TokenItem(null, WalletBchManager.BITCASH_CURRENCY_CODE, WalletBchManager.NAME, null, true);
             else if (tokenSymbol.equalsIgnoreCase(WalletBsvManager.BSV_CURRENCY_CODE))
                 tokenItem = new TokenItem(null, WalletBsvManager.BSV_CURRENCY_CODE, WalletBsvManager.NAME, null, true);
+            else if (tokenSymbol.equalsIgnoreCase(WalletXsvManager.XSV_CURRENCY_CODE))
+                tokenItem = new TokenItem(null, WalletXsvManager.BSV_CURRENCY_CODE, WalletXsvManager.NAME, null, true);
             else if (tokenSymbol.equalsIgnoreCase(WalletEthManager.ETH_CURRENCY_CODE))
                 tokenItem = new TokenItem(null, WalletEthManager.ETH_CURRENCY_CODE, WalletEthManager.NAME, null, true);
             else if (tokenSymbol.equalsIgnoreCase(WalletTokenManager.BRD_CURRENCY_CODE))

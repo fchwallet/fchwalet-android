@@ -127,6 +127,10 @@ class WalletViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun getInterval(interval: Interval) {
+        // added by Chen Fei, ignore XSV
+        if (targetCurrencyCode.equals("XSV")) {
+            return
+        }
         val context = (getApplication() as Application).applicationContext
         chartInterval.value = interval
         BRExecutor.getInstance()
@@ -159,6 +163,10 @@ class WalletViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun refreshPriceChange() {
+        // added by Chen Fei, ignore XSV
+        if (targetCurrencyCode.equals("XSV")) {
+            return
+        }
         val context = getApplication<Application>()
         BRExecutor.getInstance().forLightWeightBackgroundTasks().execute {
             val refCurrency = BRSharedPrefs.getPreferredFiatIso()
