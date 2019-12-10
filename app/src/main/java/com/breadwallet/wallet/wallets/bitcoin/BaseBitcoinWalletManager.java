@@ -772,7 +772,11 @@ public abstract class BaseBitcoinWalletManager extends BRCoreWalletManager imple
         BRCoreMerkleBlock arr[] = new BRCoreMerkleBlock[blocks.size()];
         for (int i = 0; i < blocks.size(); i++) {
             BRMerkleBlockEntity ent = blocks.get(i);
-            arr[i] = new BRCoreMerkleBlock(ent.getBuff(), ent.getBlockHeight());
+            if (getCurrencyCode().equalsIgnoreCase("xsv")) {
+                arr[i] = new BRCoreMerkleBlock(ent.getBuff(), ent.getBlockHeight(), true);
+            } else {
+                arr[i] = new BRCoreMerkleBlock(ent.getBuff(), ent.getBlockHeight());
+            }
         }
         return arr;
     }

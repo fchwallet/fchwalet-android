@@ -87,7 +87,7 @@ public class ManageWalletsActivity extends BaseSettingsActivity implements OnSta
             else if (tokenSymbol.equalsIgnoreCase(WalletBsvManager.BSV_CURRENCY_CODE))
                 tokenItem = new TokenItem(null, WalletBsvManager.BSV_CURRENCY_CODE, WalletBsvManager.NAME, null, true);
             else if (tokenSymbol.equalsIgnoreCase(WalletXsvManager.XSV_CURRENCY_CODE))
-                tokenItem = new TokenItem(null, WalletXsvManager.BSV_CURRENCY_CODE, WalletXsvManager.NAME, null, true);
+                tokenItem = new TokenItem(null, WalletXsvManager.XSV_CURRENCY_CODE, WalletXsvManager.NAME, null, true);
             else if (tokenSymbol.equalsIgnoreCase(WalletEthManager.ETH_CURRENCY_CODE))
                 tokenItem = new TokenItem(null, WalletEthManager.ETH_CURRENCY_CODE, WalletEthManager.NAME, null, true);
             else if (tokenSymbol.equalsIgnoreCase(WalletTokenManager.BRD_CURRENCY_CODE))
