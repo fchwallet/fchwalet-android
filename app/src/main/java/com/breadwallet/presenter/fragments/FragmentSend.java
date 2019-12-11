@@ -693,6 +693,10 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
 
         //wallet's balance for the selected ISO
         BigDecimal isoBalance = isIsoCrypto ? wm.getCryptoForSmallestCrypto(context, mCurrentBalance) : wm.getFiatForSmallestCrypto(context, mCurrentBalance, null);
+        if (wm.getName().equalsIgnoreCase("xsv")) {
+            double rate = mSelectedCurrencyCode.equalsIgnoreCase("usd") ? 0.14286 : 1;
+            isoBalance = mCurrentBalance.multiply(new BigDecimal(rate)).divide(new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS));
+        }
         if (isoBalance == null) isoBalance = BigDecimal.ZERO;
 
         BigDecimal rawFee = wm.getEstimatedFee(cryptoAmount, mAddressEdit.getText().toString());

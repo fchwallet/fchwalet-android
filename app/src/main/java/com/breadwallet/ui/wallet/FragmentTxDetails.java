@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,7 @@ import com.breadwallet.tools.util.CurrencyUtils;
 import com.breadwallet.tools.util.Utils;
 import com.breadwallet.wallet.WalletsMaster;
 import com.breadwallet.wallet.abstracts.BaseWalletManager;
+import com.breadwallet.wallet.wallets.bitcoin.BaseBitcoinWalletManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletEthManager;
 import com.platform.entities.TxMetaData;
 import com.platform.tools.KVStoreManager;
@@ -225,14 +227,23 @@ public class FragmentTxDetails extends DialogFragment {
 //                BigDecimal fee = isCryptoPreferred ? rawFee.abs() : walletManager.getFiatForSmallestCrypto(app, rawFee, null).abs();
 //                BigDecimal rawTotalSent = mTransaction.getAmount().abs().add(rawFee.abs());
                 // added by Chen Fei, for XSV
-                BigDecimal fee = new BigDecimal(0);
-                BigDecimal rawTotalSent = rawFee.abs();
-                if (!walletManager.getName().equalsIgnoreCase("xsv")) {
+                BigDecimal fee = rawFee.abs();
+                if (walletManager.getName().equalsIgnoreCase("xsv")) {
+                    if (!isCryptoPreferred) {
+                        double rate = BRSharedPrefs.getPreferredFiatIso(app).equalsIgnoreCase("usd") ? 0.14286 : 1;
+                        fee = new BigDecimal(rate).multiply(rawFee).divide(new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS));
+                    }
+                } else {
                     fee = isCryptoPreferred ? rawFee.abs() : walletManager.getFiatForSmallestCrypto(app, rawFee, null).abs();
-                    rawTotalSent = mTransaction.getAmount().abs().add(rawFee.abs());
                 }
+                BigDecimal rawTotalSent = mTransaction.getAmount().abs().add(rawFee.abs());
 
                 BigDecimal totalSent = isCryptoPreferred ? rawTotalSent : walletManager.getFiatForSmallestCrypto(app, rawTotalSent, null);
+                if (walletManager.getName().equalsIgnoreCase("xsv") && !isCryptoPreferred) {
+                    double rate = BRSharedPrefs.getPreferredFiatIso(app).equalsIgnoreCase("usd") ? 0.14286 : 1;
+                    totalSent = new BigDecimal(rate).multiply(rawTotalSent).divide(new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS));
+                }
+
                 mFeeSecondary.setText(CurrencyUtils.getFormattedAmount(app, iso, totalSent));
                 mFeePrimary.setText(CurrencyUtils.getFormattedAmount(app, iso, fee));
                 mFeePrimaryLabel.setText(String.format(getString(R.string.Send_fee), ""));
@@ -343,6 +354,10 @@ public class FragmentTxDetails extends DialogFragment {
                 }
                 String metaIso = Utils.isNullOrEmpty(mTxMetaData.exchangeCurrency) ? "USD" : mTxMetaData.exchangeCurrency;
 
+                if (walletManager.getName().equalsIgnoreCase("xsv")) {
+                    metaIso = BRSharedPrefs.getPreferredFiatIso(app);
+                    mTxMetaData.exchangeRate = metaIso.equalsIgnoreCase("usd") ? 0.14286 : 1;
+                }
                 exchangeRateFormatted = CurrencyUtils.getFormattedAmount(app, metaIso, new BigDecimal(mTxMetaData.exchangeRate));
                 mExchangeRate.setText(exchangeRateFormatted);
             }

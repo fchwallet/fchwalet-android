@@ -166,7 +166,8 @@ public class TransactionListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
         if (wm.getName().equalsIgnoreCase("xsv") && amount == null) {
             BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
-            amount = cryptoAmount.divide(sato).multiply(new BigDecimal(0.142857));
+            double rate = BRSharedPrefs.getPreferredFiatIso(mContext).equalsIgnoreCase("usd") ? 0.14286 : 1;
+            amount = cryptoAmount.divide(sato).multiply(new BigDecimal(rate));
         }
 
         String formattedAmount = CurrencyUtils.getFormattedAmount(mContext, preferredCurrencyCode, amount, wm.getUiConfiguration().getMaxDecimalPlacesForUi(), true);

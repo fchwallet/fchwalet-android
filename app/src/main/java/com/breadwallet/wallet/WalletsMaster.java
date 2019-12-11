@@ -196,7 +196,8 @@ public class WalletsMaster implements WalletEthManager.OnTokenLoadedListener {
             if (wallet.getName().equalsIgnoreCase("xsv")) {
                 fiatBalance = wallet.getBalance();
                 fiatBalance = fiatBalance.divide(new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS));
-                fiatBalance = fiatBalance.multiply(new BigDecimal(0.142857));
+                double rate = BRSharedPrefs.getPreferredFiatIso(app).equalsIgnoreCase("usd") ? 0.14286 : 1;
+                fiatBalance = fiatBalance.multiply(new BigDecimal(rate));
             }
 
             if (fiatBalance != null) {

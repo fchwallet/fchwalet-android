@@ -44,6 +44,7 @@ import com.breadwallet.tools.manager.FontManager;
 import com.breadwallet.tools.manager.InternetManager;
 import com.breadwallet.tools.threads.executor.BRExecutor;
 import com.breadwallet.tools.util.BRConstants;
+import com.breadwallet.tools.util.CurrencyUtils;
 import com.breadwallet.tools.util.EventUtils;
 import com.breadwallet.tools.util.SyncTestLogger;
 import com.breadwallet.tools.util.TokenUtil;
@@ -232,10 +233,13 @@ public class WalletActivity extends BRActivity implements InternetManager.Connec
                 if (Utils.isNullOrZero(balance.getExchangeRate())) {
 //                    mCurrencyPriceUsd.setVisibility(View.INVISIBLE);
                     // added by Chen Fei, for XSV
-                    BigDecimal exchangeRate = new BigDecimal(0.142857);
-                    BigDecimal fiatBalance = new BigDecimal(balance.getCryptoBalance()).multiply(exchangeRate);
-                    mCurrencyPriceUsd.setText("$0.14");
-                    mBalancePrimary.setText("$" + new DecimalFormat("0.00").format(fiatBalance));
+                    double rate = BRSharedPrefs.getPreferredFiatIso(this).equalsIgnoreCase("usd") ? 0.14286 : 1;
+                    BigDecimal exchangeRate = new BigDecimal(rate);
+                    BigDecimal fiatBalance = mWallet.getBalance().multiply(exchangeRate).divide(new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS));
+                    String er = CurrencyUtils.getFormattedAmount(this, BRSharedPrefs.getPreferredFiatIso(this), exchangeRate);
+                    String fb = CurrencyUtils.getFormattedAmount(this, BRSharedPrefs.getPreferredFiatIso(this), fiatBalance);
+                    mCurrencyPriceUsd.setText(er);
+                    mBalancePrimary.setText(fb);
                 } else {
                     mCurrencyPriceUsd.setVisibility(View.VISIBLE);
                 }

@@ -33,6 +33,7 @@ import com.breadwallet.wallet.exceptions.FeeOutOfDate;
 import com.breadwallet.wallet.exceptions.InsufficientFundsException;
 import com.breadwallet.wallet.exceptions.SomethingWentWrong;
 import com.breadwallet.wallet.exceptions.SpendingNotAllowed;
+import com.breadwallet.wallet.wallets.bitcoin.BaseBitcoinWalletManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBchManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBitcoinManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletEthManager;
@@ -394,6 +395,17 @@ public class SendManager {
         String formattedAmount = CurrencyUtils.getFormattedAmount(ctx, iso, wm.getFiatForSmallestCrypto(ctx, amount, null));
         String formattedFee = CurrencyUtils.getFormattedAmount(ctx, iso, wm.getFiatForSmallestCrypto(ctx, feeForTx, null));
         String formattedTotal = CurrencyUtils.getFormattedAmount(ctx, iso, wm.getFiatForSmallestCrypto(ctx, total, null));
+
+        if (wm.getName().equalsIgnoreCase("xsv")) {
+            BigDecimal rate = new BigDecimal(iso.equalsIgnoreCase("usd") ? 0.14286 : 1);
+            BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
+            BigDecimal fa = amount.divide(sato).multiply(rate);
+            BigDecimal ff = feeForTx.divide(sato).multiply(rate);
+            BigDecimal ft = total.divide(sato).multiply(rate);
+            formattedAmount = CurrencyUtils.getFormattedAmount(ctx, iso, fa);
+            formattedFee = CurrencyUtils.getFormattedAmount(ctx, iso, ff);
+            formattedTotal = CurrencyUtils.getFormattedAmount(ctx, iso, ft);
+        }
 
         boolean isErc20 = WalletsMaster.getInstance().isCurrencyCodeErc20(ctx, wm.getCurrencyCode());
 

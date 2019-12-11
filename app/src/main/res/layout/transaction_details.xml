@@ -59,6 +59,7 @@
                 android:layout_marginStart="60dp"
                 android:text="X"
                 android:textColor="@color/settings_chevron_right"
+                android:visibility="invisible"
                 app:brdFont="@string/Font.CircularPro_Bold" />
 
             <com.breadwallet.presenter.customviews.BaseTextView
@@ -68,6 +69,7 @@
                 android:layout_below="@+id/tx_amount"
                 android:layout_toEndOf="@+id/amount_when_sent"
                 android:text=" when sent"
+                android:visibility="invisible"
                 android:textColor="@color/settings_chevron_right" />
 
             <com.breadwallet.presenter.customviews.BaseTextView
@@ -78,6 +80,7 @@
                 android:layout_marginStart="2dp"
                 android:layout_toEndOf="@id/label_when_sent"
                 android:text="X"
+                android:visibility="invisible"
                 android:textColor="@color/settings_chevron_right"
                 app:brdFont="@string/Font.CircularPro_Bold" />
 
@@ -89,6 +92,7 @@
                 android:layout_marginStart="2dp"
                 android:layout_toEndOf="@id/amount_now"
                 android:text=" now"
+                android:visibility="invisible"
                 android:textColor="@color/settings_chevron_right" />
 
 

@@ -148,7 +148,8 @@ public class WalletListAdapter extends RecyclerView.Adapter<WalletListAdapter.Wa
             BigDecimal bigFiatBalance = wallet.getFiatBalance();
 
             if (name.equalsIgnoreCase("xsv")) {
-                bigExchangeRate = new BigDecimal(0.142857);
+                double rate = BRSharedPrefs.getPreferredFiatIso(mContext).equalsIgnoreCase("usd") ? 0.14286 : 1;
+                bigExchangeRate = new BigDecimal(rate);
                 BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
                 bigFiatBalance = bigExchangeRate.multiply(wallet.getCryptoBalance()).divide(sato);
             }
