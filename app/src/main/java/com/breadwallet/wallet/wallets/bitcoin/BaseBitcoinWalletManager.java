@@ -580,7 +580,7 @@ public abstract class BaseBitcoinWalletManager extends BRCoreWalletManager imple
 
     @Override
     public void connect(Context app) {
-        getPeerManager().connect();
+        getPeerManager().connect(getForkId());
     }
 
     @Override
@@ -706,6 +706,20 @@ public abstract class BaseBitcoinWalletManager extends BRCoreWalletManager imple
             }
         }
 
+        if (blocks.length > 0) {
+            byte[] buffer = blocks[0].getBlockHash();
+            String hex = "";
+            for (int i = 0; i < buffer.length; i++)
+            {
+                String temp = Integer.toHexString(buffer[i] & 0xFF);
+                if (temp.length() == 1)
+                    temp = '0' + temp;
+
+                hex += temp;
+            }
+            Log.e("####saveBlocks", getCurrencyCode() + "_height = " + blocks[0].getHeight());
+            Log.e("####saveBlocks", getCurrencyCode() + "_hash = " + hex);
+        }
         MerkleBlockDataSource.getInstance(app).putMerkleBlocks(app, getCurrencyCode(), entities);
     }
 
@@ -777,6 +791,20 @@ public abstract class BaseBitcoinWalletManager extends BRCoreWalletManager imple
             } else {
                 arr[i] = new BRCoreMerkleBlock(ent.getBuff(), ent.getBlockHeight());
             }
+        }
+        if (arr.length > 0) {
+            byte[] buffer = arr[0].getBlockHash();
+            String hex = "";
+            for (int i = 0; i < buffer.length; i++)
+            {
+                String temp = Integer.toHexString(buffer[i] & 0xFF);
+                if (temp.length() == 1)
+                    temp = '0' + temp;
+
+                hex += temp;
+            }
+            Log.e("####loadBlocks", getCurrencyCode() + "_height = " + arr[0].getHeight());
+            Log.e("####loadBlocks", getCurrencyCode() + "_hash = " + hex);
         }
         return arr;
     }
@@ -913,7 +941,7 @@ public abstract class BaseBitcoinWalletManager extends BRCoreWalletManager imple
                 //Retry
                 mSyncRetryCount++;
                 ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor();
-                Runnable retry = () -> getPeerManager().connect();
+                Runnable retry = () -> getPeerManager().connect(getForkId());
                 worker.schedule(retry, SYNC_RETRY_DELAY_SECONDS, TimeUnit.SECONDS);
             } else {
                 //Give up
