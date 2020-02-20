@@ -86,6 +86,7 @@ public abstract class BaseBitcoinWalletManager extends BRCoreWalletManager imple
     public static final String BITCASH_CURRENCY_CODE = "BCH";
     public static final String BSV_CURRENCY_CODE = "BSV";
     public static final String XSV_CURRENCY_CODE = "XSV";
+    public static final String FCH_CURRENCY_CODE = "FCH";
 
     private WalletSettingsConfiguration mSettingsConfig;
 

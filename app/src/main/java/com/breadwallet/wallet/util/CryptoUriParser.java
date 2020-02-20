@@ -25,6 +25,7 @@ import com.breadwallet.wallet.wallets.bitcoin.BaseBitcoinWalletManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBchManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBitcoinManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBsvManager;
+import com.breadwallet.wallet.wallets.bitcoin.WalletFchManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletXsvManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletEthManager;
 
@@ -227,6 +228,7 @@ public class CryptoUriParser {
             WalletBchManager walletBchManager = WalletBchManager.getInstance(context);
             WalletBsvManager walletBsvManager = WalletBsvManager.getInstance(context);
             WalletXsvManager walletXsvManager = WalletXsvManager.getInstance(context);
+            WalletFchManager walletFchManager = WalletFchManager.getInstance(context);
             String potentialBchAddress = walletBchManager.undecorateAddress(walletBchManager.getScheme() + ":" + address);
             if (walletBitcoinManager.isAddressValid(address)) {
                 if (currentWallet.getCurrencyCode().equalsIgnoreCase(BaseBitcoinWalletManager.BSV_CURRENCY_CODE)) {
@@ -235,6 +237,9 @@ public class CryptoUriParser {
                 } else if (currentWallet.getCurrencyCode().equalsIgnoreCase(BaseBitcoinWalletManager.XSV_CURRENCY_CODE)) {
                     builder.setCurrencyCode(BaseBitcoinWalletManager.XSV_CURRENCY_CODE);
                     builder.setScheme(walletXsvManager.getScheme());
+                } else if (currentWallet.getCurrencyCode().equalsIgnoreCase(BaseBitcoinWalletManager.FCH_CURRENCY_CODE)) {
+                    builder.setCurrencyCode(BaseBitcoinWalletManager.FCH_CURRENCY_CODE);
+                    builder.setScheme(walletFchManager.getScheme());
                 } else {
                     builder.setCurrencyCode(BaseBitcoinWalletManager.BITCOIN_CURRENCY_CODE);
                     builder.setScheme(walletBitcoinManager.getScheme());

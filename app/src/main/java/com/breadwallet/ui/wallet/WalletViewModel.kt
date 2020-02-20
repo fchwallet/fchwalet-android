@@ -128,7 +128,7 @@ class WalletViewModel(application: Application) : AndroidViewModel(application) 
 
     fun getInterval(interval: Interval) {
         // added by Chen Fei, ignore XSV
-        if (targetCurrencyCode.equals("XSV")) {
+        if (targetCurrencyCode.equals("XSV") || targetCurrencyCode.equals("FCH")) {
             return
         }
         val context = (getApplication() as Application).applicationContext
@@ -164,7 +164,7 @@ class WalletViewModel(application: Application) : AndroidViewModel(application) 
 
     fun refreshPriceChange() {
         // added by Chen Fei, ignore XSV
-        if (targetCurrencyCode.equals("XSV")) {
+        if (targetCurrencyCode.equals("XSV") || targetCurrencyCode.equals("FCH")) {
             return
         }
         val context = getApplication<Application>()

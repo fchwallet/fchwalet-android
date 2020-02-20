@@ -133,40 +133,40 @@ public final class SettingsUtil {
             activity.overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
         }, false, R.drawable.ic_security_settings));
 
-        settingsItems.add(new BRSettingsItem(activity.getString(R.string.MenuButton_support), "", view -> {
-            UiUtils.showSupportFragment((FragmentActivity) activity, null, walletManager);
-        }, false, R.drawable.ic_support));
+//        settingsItems.add(new BRSettingsItem(activity.getString(R.string.MenuButton_support), "", view -> {
+//            UiUtils.showSupportFragment((FragmentActivity) activity, null, walletManager);
+//        }, false, R.drawable.ic_support));
 
-        settingsItems.add(new BRSettingsItem(activity.getString(R.string.Settings_review), "", new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AppReviewPromptManager.INSTANCE.openGooglePlay(activity);
-            }
-        }, false, R.drawable.ic_review));
-        settingsItems.add(new BRSettingsItem(activity.getString(R.string.Settings_rewards), "", new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                UiUtils.openRewardsWebView(activity);
-            }
-        }, false, R.drawable.ic_reward));
-        settingsItems.add(new BRSettingsItem(activity.getString(R.string.About_title), "", new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(activity, AboutActivity.class);
-                activity.startActivity(intent);
-                activity.overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
-            }
-        }, false, R.drawable.ic_about));
-        Experiment mapExperiment = ExperimentsRepositoryImpl.INSTANCE.getExperiments().get(Experiments.ATM_MAP.getKey());
-        if (mapExperiment != null && mapExperiment.getActive()) {
-            settingsItems.add(new BRSettingsItem(activity.getString(R.string.Settings_atmMapMenuItemTitle), "", view -> {
-                BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(() -> {
-                    String url = HTTPServer.getPlatformUrl(LinkPlugin.BROWSER_PATH);
-                    Request request = RequestBuilderKt.buildSignedRequest(url, mapExperiment.getMeta().replace("\\/", "/"), "POST", LinkPlugin.BROWSER_PATH);
-                    APIClient.getInstance(activity).sendRequest(request, false);
-                });
-            }, false, R.drawable.ic_atm_finder, activity.getString(R.string.Settings_atmMapMenuItemSubtitle)));
-        }
+//        settingsItems.add(new BRSettingsItem(activity.getString(R.string.Settings_review), "", new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                AppReviewPromptManager.INSTANCE.openGooglePlay(activity);
+//            }
+//        }, false, R.drawable.ic_review));
+//        settingsItems.add(new BRSettingsItem(activity.getString(R.string.Settings_rewards), "", new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                UiUtils.openRewardsWebView(activity);
+//            }
+//        }, false, R.drawable.ic_reward));
+//        settingsItems.add(new BRSettingsItem(activity.getString(R.string.About_title), "", new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Intent intent = new Intent(activity, AboutActivity.class);
+//                activity.startActivity(intent);
+//                activity.overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
+//            }
+//        }, false, R.drawable.ic_about));
+//        Experiment mapExperiment = ExperimentsRepositoryImpl.INSTANCE.getExperiments().get(Experiments.ATM_MAP.getKey());
+//        if (mapExperiment != null && mapExperiment.getActive()) {
+//            settingsItems.add(new BRSettingsItem(activity.getString(R.string.Settings_atmMapMenuItemTitle), "", view -> {
+//                BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(() -> {
+//                    String url = HTTPServer.getPlatformUrl(LinkPlugin.BROWSER_PATH);
+//                    Request request = RequestBuilderKt.buildSignedRequest(url, mapExperiment.getMeta().replace("\\/", "/"), "POST", LinkPlugin.BROWSER_PATH);
+//                    APIClient.getInstance(activity).sendRequest(request, false);
+//                });
+//            }, false, R.drawable.ic_atm_finder, activity.getString(R.string.Settings_atmMapMenuItemSubtitle)));
+//        }
         if (BuildConfig.DEBUG) {
             settingsItems.add(new BRSettingsItem(DEVELOPER_OPTIONS_TITLE, "", new View.OnClickListener() {
                 @Override

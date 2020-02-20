@@ -117,7 +117,7 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:padding="8dp"
-            android:stretchColumns="0,1,2"
+            android:stretchColumns="2"
             app:layout_constraintBottom_toBottomOf="parent">
 
             <TableRow>
@@ -129,6 +129,7 @@
                     android:layout_gravity="bottom"
                     android:gravity="bottom"
                     android:orientation="vertical"
+                    android:visibility="gone"
                     android:paddingBottom="4dp">
 
                     <ImageView
@@ -180,6 +181,7 @@
                     android:layout_gravity="bottom"
                     android:gravity="bottom"
                     android:orientation="vertical"
+                    android:visibility="gone"
                     android:paddingBottom="4dp">
 
                     <ImageView

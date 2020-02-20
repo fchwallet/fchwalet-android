@@ -26,6 +26,7 @@ import com.breadwallet.wallet.wallets.bitcoin.BaseBitcoinWalletManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBchManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBitcoinManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBsvManager;
+import com.breadwallet.wallet.wallets.bitcoin.WalletFchManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletXsvManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletEthManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletTokenManager;
@@ -117,6 +118,9 @@ public class WalletsMaster implements WalletEthManager.OnTokenLoadedListener {
                 } else if (enabled.symbol.equalsIgnoreCase(BaseBitcoinWalletManager.XSV_CURRENCY_CODE)) {
                     //XSV wallet
                     mWallets.add(WalletXsvManager.getInstance(app));
+                } else if (enabled.symbol.equalsIgnoreCase(BaseBitcoinWalletManager.FCH_CURRENCY_CODE)) {
+                    //FCH wallet
+                    mWallets.add(WalletFchManager.getInstance(app));
                 } else if (enabled.symbol.equalsIgnoreCase(WalletEthManager.ETH_CURRENCY_CODE)) {
                     //ETH wallet
                     mWallets.add(ethWallet);
@@ -171,6 +175,9 @@ public class WalletsMaster implements WalletEthManager.OnTokenLoadedListener {
         }
         if (WalletXsvManager.XSV_CURRENCY_CODE.equalsIgnoreCase(currencyCode)) {
             return WalletXsvManager.getInstance(app);
+        }
+        if (WalletFchManager.FCH_CURRENCY_CODE.equalsIgnoreCase(currencyCode)) {
+            return WalletFchManager.getInstance(app);
         }
         if (WalletEthManager.ETH_CURRENCY_CODE.equalsIgnoreCase(currencyCode)) {
             return WalletEthManager.getInstance(app.getApplicationContext());

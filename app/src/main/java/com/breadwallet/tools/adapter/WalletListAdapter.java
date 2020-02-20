@@ -261,7 +261,8 @@ public class WalletListAdapter extends RecyclerView.Adapter<WalletListAdapter.Wa
     @Override
     public int getItemCount() {
         // Number of wallets plus 1 for the 'Add Wallets' item.
-        return mWallets.size() + 1;
+//        return mWallets.size() + 1;
+        return mWallets.size();
     }
 
     /**
