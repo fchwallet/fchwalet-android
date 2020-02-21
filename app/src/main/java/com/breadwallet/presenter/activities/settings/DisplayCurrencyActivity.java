@@ -124,6 +124,10 @@ public class DisplayCurrencyActivity extends BaseSettingsActivity {
             if (WalletsMaster.getInstance().isIsoCrypto(this, ent.code)) {
                 iter.remove();
             }
+
+            if (!ent.code.equalsIgnoreCase("cny")) {
+                iter.remove();
+            }
         }
         return list;
     }

@@ -26,7 +26,10 @@
 package com.breadwallet.presenter.activities;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
@@ -40,7 +43,10 @@ import android.widget.TextView;
 
 import com.breadwallet.BuildConfig;
 import com.breadwallet.R;
+import com.breadwallet.fch.FchPriceTask;
 import com.breadwallet.model.Experiments;
+import com.breadwallet.model.PriceChange;
+import com.breadwallet.presenter.activities.settings.DisplayCurrencyActivity;
 import com.breadwallet.presenter.activities.settings.SettingsActivity;
 import com.breadwallet.presenter.activities.util.BRActivity;
 import com.breadwallet.presenter.customviews.BRNotificationBar;
@@ -64,8 +70,16 @@ import com.breadwallet.wallet.wallets.bitcoin.WalletBitcoinManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletTokenManager;
 import com.platform.HTTPServer;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by byfieldj on 1/17/18.
@@ -107,6 +121,8 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         mMenuLayout = findViewById(R.id.menu_layout);
         mListGroupLayout = findViewById(R.id.list_group_layout);
         mBuyMenuLabel = findViewById(R.id.buy_text_view);
+
+        initBroadcast();
 
         boolean showBuyAndSell = BRConstants.USD.equals(BRSharedPrefs.getPreferredFiatIso(this)) &&
                 ExperimentsRepositoryImpl.INSTANCE.isExperimentActive(Experiments.BUY_SELL_MENU_BUTTON);
@@ -237,7 +253,11 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         showNextPromptIfNeeded();
         InternetManager.registerConnectionReceiver(this, this);
         onConnectionChanged(InternetManager.getInstance().isConnected(this));
-        mViewModel.refreshWallets();
+
+//        mViewModel.refreshWallets();
+        LinkedBlockingQueue<Runnable> q = new LinkedBlockingQueue<Runnable>();
+        ExecutorService e = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, q);
+        new FchPriceTask(getApplicationContext()).executeOnExecutor(e);
     }
 
     @Override
@@ -271,5 +291,27 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         String buildInfo = network + " " + BuildConfig.VERSION_NAME + " build " + BuildConfig.BUILD_VERSION;
         buildInfoTextView.setText(buildInfo);
         buildInfoTextView.setVisibility(BuildConfig.BITCOIN_TESTNET || BuildConfig.DEBUG ? View.VISIBLE : View.GONE);
+    }
+
+    public static final String ACTIVITY_ACTION = "ACTIVITY_ACTION";
+    public static final String ACTION_PRICE_UPDATED = "PRICE_UPDATED";
+
+    private BroadcastReceiver mReceiver;
+
+    private void initBroadcast(){
+        BRSharedPrefs.putPreferredFiatIso(this, "CNY");
+
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(ACTION_PRICE_UPDATED)) {
+                    mViewModel.refreshWallets();
+                }
+            }
+        };
+
+        IntentFilter filter = new IntentFilter(ACTIVITY_ACTION);
+        filter.addAction(ACTION_PRICE_UPDATED);
+        registerReceiver(mReceiver, filter);
     }
 }

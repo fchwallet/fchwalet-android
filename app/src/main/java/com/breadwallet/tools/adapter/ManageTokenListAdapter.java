@@ -173,7 +173,8 @@ public class ManageTokenListAdapter extends RecyclerView.Adapter<ManageTokenList
     public int getItemCount() {
         // We add 1 here because this adapter has an "extra" item at the bottom, which is the
         // "Add Wallets" footer
-        return mTokens.size() + 1;
+//        return mTokens.size() + 1;
+        return mTokens.size();
     }
 
 

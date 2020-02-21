@@ -40,6 +40,7 @@ import android.widget.RelativeLayout;
 
 import com.breadwallet.R;
 import com.breadwallet.core.ethereum.BREthereumToken;
+import com.breadwallet.fch.SpUtil;
 import com.breadwallet.presenter.customviews.BaseTextView;
 import com.breadwallet.presenter.entities.TxUiHolder;
 import com.breadwallet.tools.manager.BRSharedPrefs;
@@ -168,6 +169,11 @@ public class TransactionListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
             double rate = BRSharedPrefs.getPreferredFiatIso(mContext).equalsIgnoreCase("usd") ? 0.14286 : 1;
             amount = cryptoAmount.divide(sato).multiply(new BigDecimal(rate));
+        }
+
+        if (wm.getName().equalsIgnoreCase("fch") && amount == null) {
+            BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
+            amount = cryptoAmount.multiply(new BigDecimal(SpUtil.get(mContext, "price"))).divide(sato);
         }
 
         String formattedAmount = CurrencyUtils.getFormattedAmount(mContext, preferredCurrencyCode, amount, wm.getUiConfiguration().getMaxDecimalPlacesForUi(), true);

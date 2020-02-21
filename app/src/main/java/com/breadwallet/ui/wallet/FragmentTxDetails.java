@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.breadwallet.R;
 import com.breadwallet.core.ethereum.*;
+import com.breadwallet.fch.SpUtil;
 import com.breadwallet.presenter.customviews.BREdit;
 import com.breadwallet.presenter.customviews.BaseTextView;
 import com.breadwallet.presenter.entities.CurrencyEntity;
@@ -233,6 +234,11 @@ public class FragmentTxDetails extends DialogFragment {
                         double rate = BRSharedPrefs.getPreferredFiatIso(app).equalsIgnoreCase("usd") ? 0.14286 : 1;
                         fee = new BigDecimal(rate).multiply(rawFee).divide(new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS));
                     }
+                } else if (walletManager.getName().equalsIgnoreCase("fch")) {
+                    if (!isCryptoPreferred) {
+                        BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
+                        fee = new BigDecimal(SpUtil.get(app, "price")).multiply(rawFee).divide(sato);
+                    }
                 } else {
                     fee = isCryptoPreferred ? rawFee.abs() : walletManager.getFiatForSmallestCrypto(app, rawFee, null).abs();
                 }
@@ -242,6 +248,11 @@ public class FragmentTxDetails extends DialogFragment {
                 if (walletManager.getName().equalsIgnoreCase("xsv") && !isCryptoPreferred) {
                     double rate = BRSharedPrefs.getPreferredFiatIso(app).equalsIgnoreCase("usd") ? 0.14286 : 1;
                     totalSent = new BigDecimal(rate).multiply(rawTotalSent).divide(new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS));
+                }
+
+                if (walletManager.getName().equalsIgnoreCase("fch") && !isCryptoPreferred) {
+                    BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
+                    totalSent = new BigDecimal(SpUtil.get(getContext(), "price")).multiply(rawTotalSent).divide(sato);
                 }
 
                 mFeeSecondary.setText(CurrencyUtils.getFormattedAmount(app, iso, totalSent));
@@ -358,6 +369,12 @@ public class FragmentTxDetails extends DialogFragment {
                     metaIso = BRSharedPrefs.getPreferredFiatIso(app);
                     mTxMetaData.exchangeRate = metaIso.equalsIgnoreCase("usd") ? 0.14286 : 1;
                 }
+
+                if (walletManager.getName().equalsIgnoreCase("fch")) {
+                    metaIso = BRSharedPrefs.getPreferredFiatIso(app);
+                    mTxMetaData.exchangeRate = Double.parseDouble(SpUtil.get(app, "price"));
+                }
+
                 exchangeRateFormatted = CurrencyUtils.getFormattedAmount(app, metaIso, new BigDecimal(mTxMetaData.exchangeRate));
                 mExchangeRate.setText(exchangeRateFormatted);
             }

@@ -28,6 +28,7 @@ import android.widget.LinearLayout;
 
 import com.breadwallet.BuildConfig;
 import com.breadwallet.R;
+import com.breadwallet.fch.SpUtil;
 import com.breadwallet.model.PriceDataPoint;
 import com.breadwallet.model.PriceChange;
 import com.breadwallet.presenter.activities.HomeActivity;
@@ -178,7 +179,7 @@ public class WalletActivity extends BRActivity implements InternetManager.Connec
         mAppBar = findViewById(R.id.appbar);
         mNotificationBar = findViewById(R.id.notification_bar);
         mChartLabel = findViewById(R.id.chart_label);
-        mChartLabel.setText("0.00%");
+        mChartLabel.setText(SpUtil.get(this, "change") + "%");
 
         mOneDay = findViewById(R.id.one_day);
         mOneDay.setOnClickListener(view -> {
@@ -232,10 +233,10 @@ public class WalletActivity extends BRActivity implements InternetManager.Connec
 
                 if (Utils.isNullOrZero(balance.getExchangeRate())) {
 //                    mCurrencyPriceUsd.setVisibility(View.INVISIBLE);
-                    // added by Chen Fei, for XSV
-                    double rate = BRSharedPrefs.getPreferredFiatIso(this).equalsIgnoreCase("usd") ? 0.14286 : 1;
-                    BigDecimal exchangeRate = new BigDecimal(rate);
-                    BigDecimal fiatBalance = mWallet.getBalance().multiply(exchangeRate).divide(new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS));
+                    // added by Chen Fei, for FCH
+                    BigDecimal exchangeRate = new BigDecimal(SpUtil.get(this, "price"));
+                    BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
+                    BigDecimal fiatBalance = mWallet.getBalance().multiply(exchangeRate).divide(sato);
                     String er = CurrencyUtils.getFormattedAmount(this, BRSharedPrefs.getPreferredFiatIso(this), exchangeRate);
                     String fb = CurrencyUtils.getFormattedAmount(this, BRSharedPrefs.getPreferredFiatIso(this), fiatBalance);
                     mCurrencyPriceUsd.setText(er);

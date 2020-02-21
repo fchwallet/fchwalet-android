@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.breadwallet.R;
+import com.breadwallet.fch.SpUtil;
 import com.breadwallet.model.PriceChange;
 import com.breadwallet.model.Wallet;
 import com.breadwallet.presenter.customviews.BaseTextView;
@@ -154,18 +156,16 @@ public class WalletListAdapter extends RecyclerView.Adapter<WalletListAdapter.Wa
                 bigFiatBalance = bigExchangeRate.multiply(wallet.getCryptoBalance()).divide(sato);
             }
 
+            if (name.equalsIgnoreCase("fch")) {
+                bigExchangeRate = new BigDecimal(SpUtil.get(mContext, "price"));
+                BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
+                bigFiatBalance = bigExchangeRate.multiply(wallet.getCryptoBalance()).divide(sato);
+            }
+
             // Format numeric data
             String exchangeRate = CurrencyUtils.getFormattedAmount(mContext, BRSharedPrefs.getPreferredFiatIso(mContext), bigExchangeRate);
             String fiatBalance = CurrencyUtils.getFormattedAmount(mContext, BRSharedPrefs.getPreferredFiatIso(mContext), bigFiatBalance);
             String cryptoBalance = CurrencyUtils.getFormattedAmount(mContext, wallet.getCurrencyCode(), wallet.getCryptoBalance());
-
-            if (Utils.isNullOrZero(bigExchangeRate)) {
-                decoratedHolderView.mWalletBalanceFiat.setVisibility(View.INVISIBLE);
-                decoratedHolderView.mTradePrice.setVisibility(View.INVISIBLE);
-            } else {
-                decoratedHolderView.mWalletBalanceFiat.setVisibility(View.VISIBLE);
-                decoratedHolderView.mTradePrice.setVisibility(View.VISIBLE);
-            }
 
             // Set wallet fields
             decoratedHolderView.mWalletName.setText(name);
@@ -191,6 +191,11 @@ public class WalletListAdapter extends RecyclerView.Adapter<WalletListAdapter.Wa
             if (name.equalsIgnoreCase("xsv")) {
                 decoratedHolderView.mPriceChange.setVisibility(View.VISIBLE);
                 decoratedHolderView.mPriceChange.setText("0.00%");
+            }
+
+            if (name.equalsIgnoreCase("fch")) {
+                decoratedHolderView.mPriceChange.setVisibility(View.VISIBLE);
+                decoratedHolderView.mPriceChange.setText(SpUtil.get(mContext, "change") + "%");
             }
 
             // Get icon for currency

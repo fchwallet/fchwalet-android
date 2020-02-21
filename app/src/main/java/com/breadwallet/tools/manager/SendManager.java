@@ -9,6 +9,7 @@ import android.util.Log;
 import com.breadwallet.BreadApp;
 import com.breadwallet.BuildConfig;
 import com.breadwallet.R;
+import com.breadwallet.fch.SpUtil;
 import com.breadwallet.model.FeeOption;
 import com.breadwallet.model.TxConfirmationDetail;
 import com.breadwallet.presenter.customviews.BRDialogView;
@@ -402,6 +403,17 @@ public class SendManager {
             BigDecimal fa = amount.divide(sato).multiply(rate);
             BigDecimal ff = feeForTx.divide(sato).multiply(rate);
             BigDecimal ft = total.divide(sato).multiply(rate);
+            formattedAmount = CurrencyUtils.getFormattedAmount(ctx, iso, fa);
+            formattedFee = CurrencyUtils.getFormattedAmount(ctx, iso, ff);
+            formattedTotal = CurrencyUtils.getFormattedAmount(ctx, iso, ft);
+        }
+
+        if (wm.getName().equalsIgnoreCase("fch")) {
+            BigDecimal rate = new BigDecimal(SpUtil.get(ctx, "price"));
+            BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
+            BigDecimal fa = amount.multiply(rate).divide(sato);
+            BigDecimal ff = feeForTx.multiply(rate).divide(sato);
+            BigDecimal ft = total.multiply(rate).divide(sato);
             formattedAmount = CurrencyUtils.getFormattedAmount(ctx, iso, fa);
             formattedFee = CurrencyUtils.getFormattedAmount(ctx, iso, ff);
             formattedTotal = CurrencyUtils.getFormattedAmount(ctx, iso, ft);

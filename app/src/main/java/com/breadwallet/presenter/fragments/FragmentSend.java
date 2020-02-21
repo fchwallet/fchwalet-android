@@ -23,6 +23,7 @@ import android.widget.TextView;
 
 import com.breadwallet.BuildConfig;
 import com.breadwallet.R;
+import com.breadwallet.fch.SpUtil;
 import com.breadwallet.model.FeeOption;
 import com.breadwallet.ui.wallet.WalletActivity;
 import com.breadwallet.presenter.customviews.BRButton;
@@ -697,6 +698,16 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
             double rate = mSelectedCurrencyCode.equalsIgnoreCase("usd") ? 0.14286 : 1;
             isoBalance = mCurrentBalance.multiply(new BigDecimal(rate)).divide(new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS));
         }
+
+        if (wm.getName().equalsIgnoreCase("fch")) {
+            BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
+            BigDecimal price = new BigDecimal(1);
+            if (mSelectedCurrencyCode.equalsIgnoreCase("CNY")) {
+                price = new BigDecimal(SpUtil.get(getContext(), "price"));
+            }
+            isoBalance = mCurrentBalance.multiply(price).divide(sato);
+        }
+
         if (isoBalance == null) isoBalance = BigDecimal.ZERO;
 
         BigDecimal rawFee = wm.getEstimatedFee(cryptoAmount, mAddressEdit.getText().toString());
