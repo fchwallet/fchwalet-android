@@ -128,6 +128,10 @@ public class OnBoardingActivity extends BRActivity implements FragmentOnBoarding
             }
         });
         sendEvent(OnBoardingEvent.GLOBE_PAGE_APPEARED);
+
+        mSkipButton.setEnabled(false);
+        EventUtils.pushEvent(EventUtils.EVENT_SKIP_BUTTON);
+        progressToBrowse();
     }
 
     @Override

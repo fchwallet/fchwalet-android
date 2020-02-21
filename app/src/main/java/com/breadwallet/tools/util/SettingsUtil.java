@@ -194,24 +194,24 @@ public final class SettingsUtil {
             }
         }, false, 0));
 
-        final WalletBitcoinManager walletBitcoinManager = WalletBitcoinManager.getInstance(activity);
-        String bitcoinSettingsLabel = String.format("%s %s", walletBitcoinManager.getName(), activity.getString(R.string.Settings_title));
-        items.add(new BRSettingsItem(bitcoinSettingsLabel, null, view -> {
-            BRSharedPrefs.putCurrentWalletCurrencyCode(activity, walletBitcoinManager.getCurrencyCode());
-            startCurrencySettings(activity);
-        }, false, 0));
-        final WalletBchManager walletBchManager = WalletBchManager.getInstance(activity);
-        String bchSettingsLabel = String.format("%s %s", walletBchManager.getName(), activity.getString(R.string.Settings_title));
+//        final WalletBitcoinManager walletBitcoinManager = WalletBitcoinManager.getInstance(activity);
+//        String bitcoinSettingsLabel = String.format("%s %s", walletBitcoinManager.getName(), activity.getString(R.string.Settings_title));
+//        items.add(new BRSettingsItem(bitcoinSettingsLabel, null, view -> {
+//            BRSharedPrefs.putCurrentWalletCurrencyCode(activity, walletBitcoinManager.getCurrencyCode());
+//            startCurrencySettings(activity);
+//        }, false, 0));
+//        final WalletBchManager walletBchManager = WalletBchManager.getInstance(activity);
+//        String bchSettingsLabel = String.format("%s %s", walletBchManager.getName(), activity.getString(R.string.Settings_title));
 
-        items.add(new BRSettingsItem(bchSettingsLabel, null, view -> {
-            BRSharedPrefs.putCurrentWalletCurrencyCode(activity, walletBchManager.getCurrencyCode());
-            startCurrencySettings(activity);
-        }, false, 0));
-        items.add(new BRSettingsItem(activity.getString(R.string.Prompts_ShareData_title), null, view -> {
-            Intent intent = new Intent(activity, ShareDataActivity.class);
-            activity.startActivity(intent);
-            activity.overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
-        }, false, 0));
+//        items.add(new BRSettingsItem(bchSettingsLabel, null, view -> {
+//            BRSharedPrefs.putCurrentWalletCurrencyCode(activity, walletBchManager.getCurrencyCode());
+//            startCurrencySettings(activity);
+//        }, false, 0));
+//        items.add(new BRSettingsItem(activity.getString(R.string.Prompts_ShareData_title), null, view -> {
+//            Intent intent = new Intent(activity, ShareDataActivity.class);
+//            activity.startActivity(intent);
+//            activity.overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
+//        }, false, 0));
         items.add(new BRSettingsItem(activity.getString(R.string.Settings_notifications), null, view -> {
             NotificationsSettingsActivity.Companion.start(activity);
         }, false, 0));

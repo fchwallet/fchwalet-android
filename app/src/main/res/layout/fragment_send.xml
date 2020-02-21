@@ -68,6 +68,7 @@
                 android:layout_marginEnd="16dp"
                 android:layout_marginRight="@dimen/bread_margin"
                 android:background="@drawable/faq_question_black"
+                android:visibility="invisible"
                 tools:layout_editor_absoluteX="0dp"
                 tools:layout_editor_absoluteY="81dp" />
 

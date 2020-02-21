@@ -54,9 +54,9 @@ public final class WalletFchManager extends BaseBitcoinWalletManager {
 
     private static final String TAG = WalletFchManager.class.getName();
     private static final String CURRENCY_CODE = FCH_CURRENCY_CODE;
-    public static final String NAME = "Freecash";
+    public static final String NAME = "FCH";
     private static final String SCHEME = BuildConfig.BITCOIN_TESTNET ? "fchtest" : "freecash";
-    private static final String COLOR = "#5e6fa5";
+    private static final String COLOR = "#272C9A";
     private static final long MAINNET_FORK_TIME = 1501568580; // Tuesday, August 1, 2017 6:23:00 AM GMT in seconds since Epoch
     private static final long TESTNET_FORK_TIME = 1501597117; // Tuesday, August 1, 2017 2:18:37 PM GMT in seconds since Epoch
 
