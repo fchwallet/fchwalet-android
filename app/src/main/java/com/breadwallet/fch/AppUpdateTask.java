@@ -2,13 +2,13 @@ package com.breadwallet.fch;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.breadwallet.model.PriceChange;
+import com.breadwallet.BuildConfig;
 import com.breadwallet.presenter.activities.HomeActivity;
-import com.breadwallet.wallet.WalletsMaster;
-import com.breadwallet.wallet.abstracts.BaseWalletManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,28 +16,27 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class FchPriceTask extends AsyncTask<String, Integer, String> {
+public class AppUpdateTask extends AsyncTask<String, Integer, String> {
 
-    public static final String TAG = "FchPriceTask";
-    public static final String mUrl = "http://api.fchwallet.com:4080/api/price";
+    public static final String TAG = "AppUpdateTask";
+    public static final String mUrl = "http://api.fchwallet.com:4080/api/version";
 
     private Context mContext;
 
-    public FchPriceTask(Context context) {
+    public AppUpdateTask(Context context) {
         mContext = context;
     }
 
-    private String getPrice() {
+    private String getApp() {
         URL url;
         try {
             url = new URL(mUrl);
         } catch (MalformedURLException w) {
-            Log.e(TAG, String.format("Exception on getPrice : %s", w.toString()));
+            Log.e(TAG, String.format("Exception on getApp : %s", w.toString()));
             return "";
         }
 
@@ -62,7 +61,7 @@ public class FchPriceTask extends AsyncTask<String, Integer, String> {
                 }
             }
         } catch (IOException e) {
-            Log.e(TAG, String.format("Exception on getPrice : %s", e.toString()));
+            Log.e(TAG, String.format("Exception on getApp : %s", e.toString()));
         } finally {
             if (connection != null)
                 connection.disconnect();
@@ -73,7 +72,7 @@ public class FchPriceTask extends AsyncTask<String, Integer, String> {
 
     @Override
     protected String doInBackground(String... data) {
-        return getPrice();
+        return getApp();
     }
 
     @Override
@@ -81,16 +80,18 @@ public class FchPriceTask extends AsyncTask<String, Integer, String> {
         if (data != null && data != "") {
             try {
                 JSONObject obj = new JSONObject(data);
-                String price = obj.getString("cny");
-                String change = obj.getString("range");
-                SpUtil.put(mContext, price, change);
-            } catch (JSONException e) {
+                String version = obj.getString("version");
+
+                if (BuildConfig.VERSION_NAME.compareTo(version) < 0) {
+                    Intent i = new Intent(HomeActivity.ACTIVITY_ACTION);
+                    i.setAction(HomeActivity.ACTION_APP_UPDATE);
+                    i.putExtra("download", obj.getString("download"));
+                    i.putExtra("version", version);
+                    mContext.sendBroadcast(i);
+                }
+            } catch (JSONException ex) {
 
             }
-
-            Intent i = new Intent(HomeActivity.ACTIVITY_ACTION);
-            i.setAction(HomeActivity.ACTION_PRICE_UPDATE);
-            mContext.sendBroadcast(i);
         }
         super.onPostExecute(data);
     }

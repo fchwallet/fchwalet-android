@@ -25,14 +25,18 @@
 
 package com.breadwallet.presenter.activities;
 
+import android.Manifest;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -40,13 +44,15 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.breadwallet.BuildConfig;
 import com.breadwallet.R;
+import com.breadwallet.fch.AppUpdateTask;
+import com.breadwallet.fch.DownloadUtils;
 import com.breadwallet.fch.FchPriceTask;
+import com.breadwallet.fch.UpdateUtil;
 import com.breadwallet.model.Experiments;
-import com.breadwallet.model.PriceChange;
-import com.breadwallet.presenter.activities.settings.DisplayCurrencyActivity;
 import com.breadwallet.presenter.activities.settings.SettingsActivity;
 import com.breadwallet.presenter.activities.util.BRActivity;
 import com.breadwallet.presenter.customviews.BRNotificationBar;
@@ -207,6 +213,8 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
             }
         });
         mViewModel.checkForInAppNotification();
+
+        appUpdate();
     }
 
     @Override
@@ -281,10 +289,6 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         }
     }
 
-    public void closeNotificationBar() {
-        mNotificationBar.setVisibility(View.INVISIBLE);
-    }
-
     private void setUpBuildInfoLabel() {
         TextView buildInfoTextView = findViewById(R.id.testnet_label);
         String network = BuildConfig.BITCOIN_TESTNET ? NETWORK_TESTNET : NETWORK_MAINNET;
@@ -294,24 +298,77 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
     }
 
     public static final String ACTIVITY_ACTION = "ACTIVITY_ACTION";
-    public static final String ACTION_PRICE_UPDATED = "PRICE_UPDATED";
+    public static final String ACTION_PRICE_UPDATE = "PRICE_UPDATE";
+    public static final String ACTION_APP_UPDATE = "APP_UPDATE";
 
     private BroadcastReceiver mReceiver;
 
-    private void initBroadcast(){
+    private void initBroadcast() {
         BRSharedPrefs.putPreferredFiatIso(this, "CNY");
 
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(ACTION_PRICE_UPDATED)) {
+                if (intent.getAction().equals(ACTION_PRICE_UPDATE)) {
                     mViewModel.refreshWallets();
+                } else if (intent.getAction().equals(ACTION_APP_UPDATE)) {
+                    String url = intent.getStringExtra("download");
+                    String version = intent.getStringExtra("version");
+                    Toast.makeText(HomeActivity.this, "检测到新版本,正在后台更新", Toast.LENGTH_LONG).show();
+                    prepare(url, version);
                 }
             }
         };
 
         IntentFilter filter = new IntentFilter(ACTIVITY_ACTION);
-        filter.addAction(ACTION_PRICE_UPDATED);
+        filter.addAction(ACTION_APP_UPDATE);
+        filter.addAction(ACTION_APP_UPDATE);
         registerReceiver(mReceiver, filter);
     }
+
+    private void appUpdate() {
+        new AppUpdateTask(getApplicationContext()).execute();
+    }
+
+    public static final String TIPS = "请授权访问存储空间权限,否则App无法更新";
+
+    private void prepare(String url, String version) {
+        int flag = ActivityCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (flag != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(HomeActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                // 用户拒绝过这个权限了，应该提示用户，为什么需要这个权限
+                Toast.makeText(HomeActivity.this, TIPS, Toast.LENGTH_LONG).show();
+            } else {
+                // 申请授权
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+            }
+        } else {
+            String apkName = "fchwallet-" + version + ".apk";
+            UpdateUtil updateUtil = new UpdateUtil();
+            Log.e(TAG, "apkName = " + apkName);
+            if (!updateUtil.checkApk(HomeActivity.this, apkName)) {
+                DownloadUtils downloadUtils = new DownloadUtils(HomeActivity.this, url, updateUtil.getFileDir(), apkName,
+                        new DownloadUtils.DownLoadListener() {
+                            @Override
+                            public void onProgress(int progress, int max) {
+                            }
+
+                            @Override
+                            public void onCancel() {
+                            }
+
+                            @Override
+                            public void onFinish() {
+                                Log.e(TAG, "onFinish ==================== ");
+                                updateUtil.checkApk(HomeActivity.this, apkName);
+                            }
+
+                            @Override
+                            public void onStart() {
+                            }
+                        });
+            }
+        }
+    }
+
 }
