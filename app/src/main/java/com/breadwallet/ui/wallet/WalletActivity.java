@@ -5,7 +5,10 @@ import android.animation.AnimatorInflater;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -28,9 +31,9 @@ import android.widget.LinearLayout;
 
 import com.breadwallet.BuildConfig;
 import com.breadwallet.R;
+import com.breadwallet.fch.KLineTask;
 import com.breadwallet.fch.SpUtil;
 import com.breadwallet.model.PriceDataPoint;
-import com.breadwallet.model.PriceChange;
 import com.breadwallet.presenter.activities.HomeActivity;
 import com.breadwallet.presenter.activities.util.BRActivity;
 import com.breadwallet.presenter.customviews.BRButton;
@@ -50,7 +53,6 @@ import com.breadwallet.tools.util.EventUtils;
 import com.breadwallet.tools.util.SyncTestLogger;
 import com.breadwallet.tools.util.TokenUtil;
 import com.breadwallet.tools.util.Utils;
-import com.breadwallet.ui.wallet.model.Balance;
 import com.breadwallet.ui.wallet.model.TxFilter;
 import com.breadwallet.ui.wallet.spark.SparkAdapter;
 import com.breadwallet.ui.wallet.spark.SparkView;
@@ -64,12 +66,16 @@ import com.breadwallet.wallet.wallets.ethereum.WalletEthManager;
 import com.platform.HTTPServer;
 import com.platform.util.AppReviewPromptManager;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.math.BigDecimal;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -153,6 +159,8 @@ public class WalletActivity extends BRActivity implements InternetManager.Connec
 
         setContentView(R.layout.activity_wallet);
 
+        initBroadcast();
+
         BRSharedPrefs.putIsNewWallet(this, false);
         mCurrencyCode = getIntent().hasExtra(EXTRA_CURRENCY_CODE) ? getIntent().getStringExtra(EXTRA_CURRENCY_CODE)
                 : WalletsMaster.getInstance().getCurrentWallet(this).getCurrencyCode(); // TODO USE A SINGLE SOURCE FOR CURRENCY
@@ -185,32 +193,38 @@ public class WalletActivity extends BRActivity implements InternetManager.Connec
         mOneDay.setOnClickListener(view -> {
             handleIntervalClick((BaseTextView) view);
             mViewModel.getInterval(Interval.ONE_DAY);
+            getKLine("1");
         });
         mOneWeek = findViewById(R.id.one_week);
         mOneWeek.setOnClickListener(view -> {
             handleIntervalClick((BaseTextView) view);
 
             mViewModel.getInterval(Interval.ONE_WEEK);
+            getKLine("2");
         });
         mOneMonth = findViewById(R.id.one_month);
         mOneMonth.setOnClickListener(view -> {
             handleIntervalClick((BaseTextView) view);
             mViewModel.getInterval(Interval.ONE_MONTH);
+            getKLine("3");
         });
         mThreeMonths = findViewById(R.id.three_months);
         mThreeMonths.setOnClickListener(view -> {
             handleIntervalClick((BaseTextView) view);
             mViewModel.getInterval(Interval.THREE_MONTHS);
+            getKLine("4");
         });
         mOneYear = findViewById(R.id.one_year);
         mOneYear.setOnClickListener(view -> {
             handleIntervalClick((BaseTextView) view);
             mViewModel.getInterval(Interval.ONE_YEAR);
+            getKLine("5");
         });
         mThreeYears = findViewById(R.id.three_years);
         mThreeYears.setOnClickListener(view -> {
             handleIntervalClick((BaseTextView) view);
             mViewModel.getInterval(Interval.THREE_YEARS);
+            getKLine("6");
         });
 
         mIntervalButtons = Arrays.asList(mOneDay, mOneWeek, mOneMonth, mThreeMonths, mOneYear, mThreeYears);
@@ -276,10 +290,10 @@ public class WalletActivity extends BRActivity implements InternetManager.Connec
                 showDataPoint(dataPoint);
                 EventUtils.pushEvent(String.format(EventUtils.EVENT_WALLET_CHART_SCRUBBED, mCurrencyCode));
             } else {
-                PriceChange priceChange = mViewModel.getPriceChange().getValue();
-                mChartLabel.setText(priceChange != null ? priceChange.toString() : "");
-                Balance balance = mViewModel.getBalanceLiveData().getValue();
-                mCurrencyPriceUsd.setText(balance != null ? balance.getFiatExchangeRate() : "");
+//                PriceChange priceChange = mViewModel.getPriceChange().getValue();
+//                mChartLabel.setText(priceChange != null ? priceChange.toString() : "");
+//                Balance balance = mViewModel.getBalanceLiveData().getValue();
+//                mCurrencyPriceUsd.setText(balance != null ? balance.getFiatExchangeRate() : "");
             }
         });
         // Set the background color for the app bar again when the layout has changed
@@ -331,6 +345,8 @@ public class WalletActivity extends BRActivity implements InternetManager.Connec
         moreInfoButton.setOnClickListener(view -> UiUtils.showSupportFragment(WalletActivity.this, BRConstants.FAQ_UNSUPPORTED_TOKEN, null));
 
         EventUtils.pushEvent(String.format(EventUtils.EVENT_WALLET_APPEARED, mCurrencyCode));
+
+        getKLine("5");
     }
 
     /**
@@ -702,6 +718,49 @@ public class WalletActivity extends BRActivity implements InternetManager.Connec
         Animator searchBarAnimation = AnimatorInflater.loadAnimator(this, R.animator.from_top);
         searchBarAnimation.setTarget(mSearchBar);
         searchBarAnimation.start();
+    }
+
+    public static final String WALLET_ACTION = "WALLET_ACTION";
+    public static final String ACTION_KLINE_UPDATE = "KLINE_UPDATE";
+
+    private BroadcastReceiver mReceiver;
+    private List<PriceDataPoint> mPoints = new ArrayList<PriceDataPoint>();
+
+    private void initBroadcast() {
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(ACTION_KLINE_UPDATE)) {
+                    String data = intent.getStringExtra("kline");
+
+                    try {
+                        String array = new JSONObject(data).getString("data");
+                        JSONArray ja = new JSONArray(array);
+                        mPoints.clear();
+                        for (int i = 0; i < ja.length(); ++i) {
+                            JSONArray entry = ja.getJSONArray(i);
+                            int time = entry.getInt(0);
+                            double price = entry.getDouble(1);
+                            Date date = new Date(time);
+                            PriceDataPoint p = new PriceDataPoint(date, price);
+                            mPoints.add(p);
+                        }
+                        mPriceDataAdapter.setDataSet(mPoints);
+                        mPriceDataAdapter.notifyDataSetChanged();
+                    } catch (Exception e) {
+
+                    }
+                }
+            }
+        };
+
+        IntentFilter filter = new IntentFilter(WALLET_ACTION);
+        filter.addAction(ACTION_KLINE_UPDATE);
+        registerReceiver(mReceiver, filter);
+    }
+
+    private void getKLine(String interval) {
+        new KLineTask(WalletActivity.this, interval).execute();
     }
 
 }

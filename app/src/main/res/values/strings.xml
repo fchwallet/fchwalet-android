@@ -1217,4 +1217,9 @@
     <string name="Wallet.one_year">1y</string>
     <string name="Wallet.three_years">3y</string>
 
+    <string name="Wallet.one_minute">1m</string>
+    <string name="Wallet.five_minutes">5m</string>
+    <string name="Wallet.thirty_minutes">30m</string>
+    <string name="Wallet.one_hour">1h</string>
+
 </resources>
