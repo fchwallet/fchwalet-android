@@ -763,4 +763,10 @@ public class WalletActivity extends BRActivity implements InternetManager.Connec
         new KLineTask(WalletActivity.this, interval).execute();
     }
 
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(mReceiver);
+        super.onDestroy();
+    }
+
 }

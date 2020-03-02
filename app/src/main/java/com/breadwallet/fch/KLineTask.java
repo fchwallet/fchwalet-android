@@ -32,45 +32,6 @@ public class KLineTask extends AsyncTask<String, Integer, String> {
         mInterval = interval;
     }
 
-    private String getData() {
-        URL url;
-        try {
-            url = new URL(mUrl);
-        } catch (MalformedURLException w) {
-            Log.e(TAG, String.format("Exception on getData : %s", w.toString()));
-            return "";
-        }
-
-        String data = "";
-        HttpURLConnection connection = null;
-        try {
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            if (connection != null) {
-                int responseCode = connection.getResponseCode();
-                if (responseCode < 300) {
-                    BufferedReader response = new BufferedReader(new InputStreamReader(
-                            connection.getInputStream()));
-
-                    String inputLine;
-                    while ((inputLine = response.readLine()) != null) {
-                        data += inputLine + '\n';
-                    }
-                    Log.e(TAG, "data = " + data);
-                } else {
-                    Log.e(TAG, "responseCode = " + responseCode);
-                }
-            }
-        } catch (IOException e) {
-            Log.e(TAG, String.format("Exception on getData : %s", e.toString()));
-        } finally {
-            if (connection != null)
-                connection.disconnect();
-        }
-
-        return data;
-    }
-
     private String post() {
         StringBuilder sb = new StringBuilder();
         try {
@@ -109,10 +70,10 @@ public class KLineTask extends AsyncTask<String, Integer, String> {
                     sb.append(temp);
                 }
                 reader.close();
-                Log.e("####", "data = " + sb.toString());
+                Log.e(TAG, "data = " + sb.toString());
                 return sb.toString();
             } else {
-                Log.e("####", "responseCode = " + connection.getResponseCode());
+                Log.e(TAG, "responseCode = " + connection.getResponseCode());
             }
             connection.disconnect();
         } catch (Exception e) {

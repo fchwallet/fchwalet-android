@@ -254,7 +254,11 @@ public class SendManager {
             }
 
             String formattedCrypto = CurrencyUtils.getFormattedAmount(app, wm.getCurrencyCode(), maxAmountDouble.negate());
-            String formattedFiat = CurrencyUtils.getFormattedAmount(app, BRSharedPrefs.getPreferredFiatIso(app), wm.getFiatForSmallestCrypto(app, maxAmountDouble, null).negate());
+            BigDecimal bg = wm.getFiatForSmallestCrypto(app, maxAmountDouble, null);
+            if (bg == null) {
+                bg = BigDecimal.ZERO;
+            }
+            String formattedFiat = CurrencyUtils.getFormattedAmount(app, BRSharedPrefs.getPreferredFiatIso(app), bg.negate());
 
             String posButtonText = String.format("%s (%s)", formattedCrypto, formattedFiat);
 
