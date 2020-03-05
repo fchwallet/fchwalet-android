@@ -1166,4 +1166,8 @@
     <string name="WritePaperPhrase.previous">上一步</string>
     <!-- 1 of 3 -->
     <string name="WritePaperPhrase.step">%1$d / %2$d</string>
+
+    <string name="HomeScreen.search">搜索</string>
+    <string name="HomeScreen.setting">设置</string>
+    <string name="add_cid">创建或更新CID</string>
 </resources>

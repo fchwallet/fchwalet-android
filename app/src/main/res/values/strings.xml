@@ -1222,4 +1222,8 @@
     <string name="Wallet.thirty_minutes">30m</string>
     <string name="Wallet.one_hour">1h</string>
 
+    <string name="HomeScreen.search">Search</string>
+    <string name="HomeScreen.setting">Setting</string>
+    <string name="add_cid">Add or Update CID</string>
+
 </resources>
