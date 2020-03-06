@@ -341,6 +341,11 @@
         <activity
             android:name=".ui.settings.NotificationsSettingsActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".presenter.activities.CidActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden" />
 
         <service
             android:name=".protocols.messageexchange.MessageExchangeService"

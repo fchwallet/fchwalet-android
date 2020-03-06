@@ -33,15 +33,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.Nullable;
-import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,38 +46,38 @@ import android.widget.Toast;
 import com.breadwallet.BuildConfig;
 import com.breadwallet.R;
 import com.breadwallet.fch.AppUpdateTask;
+import com.breadwallet.fch.Cid;
+import com.breadwallet.fch.DataCache;
 import com.breadwallet.fch.DownloadUtils;
 import com.breadwallet.fch.FchPriceTask;
+import com.breadwallet.fch.SpUtil;
 import com.breadwallet.fch.UpdateUtil;
-import com.breadwallet.model.Experiments;
+import com.breadwallet.fch.Utxo;
 import com.breadwallet.presenter.activities.settings.SettingsActivity;
 import com.breadwallet.presenter.activities.util.BRActivity;
 import com.breadwallet.presenter.customviews.BRNotificationBar;
 import com.breadwallet.presenter.customviews.BaseTextView;
 import com.breadwallet.presenter.viewmodels.HomeViewModel;
-import com.breadwallet.repository.ExperimentsRepositoryImpl;
+import com.breadwallet.tools.adapter.CidListAdapter;
 import com.breadwallet.tools.adapter.WalletListAdapter;
-import com.breadwallet.tools.animation.UiUtils;
 import com.breadwallet.tools.listeners.RecyclerItemClickListener;
 import com.breadwallet.tools.manager.AppEntryPointHandler;
 import com.breadwallet.tools.manager.BRSharedPrefs;
 import com.breadwallet.tools.manager.InternetManager;
 import com.breadwallet.tools.manager.PromptManager;
-import com.breadwallet.tools.util.BRConstants;
 import com.breadwallet.tools.util.CurrencyUtils;
 import com.breadwallet.tools.util.EventUtils;
 import com.breadwallet.tools.util.Utils;
 import com.breadwallet.ui.notification.InAppNotificationActivity;
 import com.breadwallet.ui.wallet.WalletActivity;
-import com.breadwallet.wallet.wallets.bitcoin.WalletBitcoinManager;
+import com.breadwallet.wallet.WalletsMaster;
+import com.breadwallet.wallet.abstracts.BaseWalletManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletTokenManager;
-import com.platform.HTTPServer;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -104,12 +101,10 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
     private WalletListAdapter mAdapter;
     private BaseTextView mFiatTotal;
     private BRNotificationBar mNotificationBar;
-    private ConstraintLayout mBuyLayout;
     private LinearLayout mTradeLayout;
     private LinearLayout mMenuLayout;
     private LinearLayout mListGroupLayout;
     private HomeViewModel mViewModel;
-    private BaseTextView mBuyMenuLabel;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -122,30 +117,16 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         mWalletRecycler = findViewById(R.id.rv_wallet_list);
         mFiatTotal = findViewById(R.id.total_assets_usd);
         mNotificationBar = findViewById(R.id.notification_bar);
-        mBuyLayout = findViewById(R.id.buy_layout);
         mTradeLayout = findViewById(R.id.trade_layout);
         mMenuLayout = findViewById(R.id.menu_layout);
         mListGroupLayout = findViewById(R.id.list_group_layout);
-        mBuyMenuLabel = findViewById(R.id.buy_text_view);
+        mCidRecycler = findViewById(R.id.rv_cid_list);
 
         initBroadcast();
 
-        boolean showBuyAndSell = BRConstants.USD.equals(BRSharedPrefs.getPreferredFiatIso(this)) &&
-                ExperimentsRepositoryImpl.INSTANCE.isExperimentActive(Experiments.BUY_SELL_MENU_BUTTON);
-        mBuyMenuLabel.setText(showBuyAndSell ? R.string.HomeScreen_buyAndSell : R.string.HomeScreen_buy);
-        Map<String, String> eventAttributes = new HashMap<>();
-        eventAttributes.put(EventUtils.EVENT_ATTRIBUTE_SHOW, Boolean.toString(showBuyAndSell));
-        EventUtils.pushEvent(EventUtils.EVENT_EXPERIMENT_BUY_SELL_MENU_BUTTON, eventAttributes);
-        mBuyLayout.setOnClickListener(view -> {
-            Map<String, String> clickAttributes = new HashMap<>();
-            eventAttributes.put(EventUtils.EVENT_ATTRIBUTE_BUY_AND_SELL, Boolean.toString(showBuyAndSell));
-            EventUtils.pushEvent(EventUtils.EVENT_HOME_DID_TAP_BUY, clickAttributes);
-            String url = String.format(BRConstants.CURRENCY_PARAMETER_STRING_FORMAT,
-                    HTTPServer.getPlatformUrl(HTTPServer.URL_BUY),
-                    WalletBitcoinManager.getInstance(HomeActivity.this).getCurrencyCode());
-            UiUtils.startPlatformBrowser(HomeActivity.this, url);
+        mTradeLayout.setOnClickListener(view -> {
+            Toast.makeText(HomeActivity.this, "Coming soon", Toast.LENGTH_LONG).show();
         });
-        mTradeLayout.setOnClickListener(view -> UiUtils.startPlatformBrowser(HomeActivity.this, HTTPServer.getPlatformUrl(HTTPServer.URL_TRADE)));
         mMenuLayout.setOnClickListener(view -> {
             Intent intent = new Intent(HomeActivity.this, SettingsActivity.class);
             intent.putExtra(SettingsActivity.EXTRA_MODE, SettingsActivity.MODE_SETTINGS);
@@ -187,13 +168,31 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         }));
         processIntentData(getIntent());
 
-        ImageView buyBell = findViewById(R.id.buy_bell);
-        boolean isBellNeeded = ExperimentsRepositoryImpl.INSTANCE.isExperimentActive(Experiments.BUY_NOTIFICATION)
-                && CurrencyUtils.isBuyNotificationNeeded(this);
-        buyBell.setVisibility(isBellNeeded ? View.VISIBLE : View.INVISIBLE);
-
         mAdapter = new WalletListAdapter(this);
         mWalletRecycler.setAdapter(mAdapter);
+
+        mCidRecycler.setLayoutManager(new LinearLayoutManager(this));
+        mCidRecycler.addOnItemTouchListener(new RecyclerItemClickListener(this, mCidRecycler, new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position, float x, float y) {
+                if (position >= mCidAdapter.getItemCount() || position < 0) {
+                    return;
+                }
+                if (mCidAdapter.getItemViewType(position) == 0) {
+
+                } else {
+                    Intent intent = new Intent(HomeActivity.this, CidActivity.class);
+                    startActivity(intent);
+                    overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
+                }
+            }
+
+            @Override
+            public void onLongItemClick(View view, int position) {
+            }
+        }));
+        mCidAdapter = new CidListAdapter(this);
+        mCidRecycler.setAdapter(mCidAdapter);
 
         // Get ViewModel, observe updates to Wallet and aggregated balance data
         mViewModel = ViewModelProviders.of(this).get(HomeViewModel.class);
@@ -214,6 +213,10 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         });
         mViewModel.checkForInAppNotification();
 
+        mAddress = SpUtil.getAddress(this);
+        mCids = SpUtil.getCid(this);
+        mDateCache.setCidList(mCids);
+        mDateCache.setSpendTxid(SpUtil.getTxid(this));
         appUpdate();
     }
 
@@ -262,10 +265,13 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         InternetManager.registerConnectionReceiver(this, this);
         onConnectionChanged(InternetManager.getInstance().isConnected(this));
 
-//        mViewModel.refreshWallets();
         LinkedBlockingQueue<Runnable> q = new LinkedBlockingQueue<Runnable>();
         ExecutorService e = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, q);
         new FchPriceTask(getApplicationContext()).executeOnExecutor(e);
+
+        updateUtxo();
+        updateAddress();
+        updateCid();
     }
 
     @Override
@@ -305,6 +311,8 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
 
     private void initBroadcast() {
         BRSharedPrefs.putPreferredFiatIso(this, "CNY");
+
+        mDateCache = DataCache.getInstance();
 
         mReceiver = new BroadcastReceiver() {
             @Override
@@ -371,4 +379,87 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         }
     }
 
+    private BaseWalletManager mWalletManager;
+    private List<Utxo> mUtxos = new ArrayList<Utxo>();
+    private List<Cid> mCids = new ArrayList<Cid>();
+    private List<String> mAddress = new ArrayList<String>();
+    private Map<String, Integer> mAddrBalance = new HashMap<String, Integer>();
+    private RecyclerView mCidRecycler;
+    private CidListAdapter mCidAdapter;
+    private DataCache mDateCache;
+
+    private int mTotalBalance = 0;
+
+    private void updateUtxo() {
+        mWalletManager = WalletsMaster.getInstance().getCurrentWallet(this);
+        String utxo = mWalletManager.getUtxo();
+        Log.e("####", "utxo = " + utxo);
+
+        mTotalBalance = 0;
+        mUtxos.clear();
+        mAddrBalance.clear();
+        if (utxo.length() < 60) {
+            return;
+        }
+
+        List<String> spendTxids = mDateCache.getSpendTxid();
+
+        String[] strs = utxo.split(",");
+        for (int i = 0; i < strs.length; i += 4) {
+
+            if (spendTxids.contains(strs[i])) {
+                continue;
+            }
+
+            String addr = strs[i + 1];
+            int amount = Integer.parseInt(strs[i + 2]);
+            int n = Integer.parseInt(strs[i + 3]);
+            Log.e("####", "h = " + strs[i]);
+            Log.e("####", "a = " + addr);
+            Log.e("####", "v = " + amount);
+            Log.e("####", "n = " + n);
+            Utxo u = new Utxo(strs[i], addr, amount, n);
+            mUtxos.add(u);
+
+            mTotalBalance += amount;
+
+            if (!mAddress.contains(addr)) {
+                mAddress.add(addr);
+            }
+
+            if (mAddrBalance.containsKey(addr)) {
+                int bal = mAddrBalance.get(addr);
+                bal += amount;
+                mAddrBalance.put(addr, bal);
+            } else {
+                mAddrBalance.put(addr, amount);
+            }
+        }
+        mDateCache.setUtxoList(mUtxos);
+    }
+
+    private void updateAddress() {
+        String addr = mWalletManager.getAddress(HomeActivity.this);
+        if (!mAddress.contains(addr)) {
+            mAddress.add(addr);
+        }
+        if (!mAddrBalance.containsKey(addr)) {
+            mAddrBalance.put(addr, 0);
+        }
+        mDateCache.setAddressList(mAddress);
+        mDateCache.setBalance(mAddrBalance);
+        SpUtil.putAddress(this, mAddress);
+    }
+
+    private void updateCid() {
+        mCids = mDateCache.getCidList();
+        Log.e("####", "cid.size = " + mCids.size());
+        mCidAdapter.setData(mCids);
+    }
+
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(mReceiver);
+        super.onDestroy();
+    }
 }
