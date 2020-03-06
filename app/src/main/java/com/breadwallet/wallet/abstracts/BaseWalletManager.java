@@ -264,4 +264,5 @@ public interface BaseWalletManager {
      */
     BigDecimal getSmallestCryptoForFiat(Context app, BigDecimal amount);
 
+    String getUtxo();
 }

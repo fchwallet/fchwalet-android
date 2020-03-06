@@ -1045,4 +1045,9 @@ public abstract class BaseBitcoinWalletManager extends BRCoreWalletManager imple
     public boolean checkConfirmations(int conformations) {
         return mWalletManagerHelper.checkConfirmations(conformations);
     }
+
+    @Override
+    public String getUtxo() {
+        return getWallet().getUtxo();
+    }
 }

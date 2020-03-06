@@ -138,4 +138,9 @@ public abstract class BaseEthereumWalletManager implements BaseWalletManager {
     public List<BRSettingsItem> getSettingsList(Context context) {
         return Collections.emptyList();
     }
+
+    @Override
+    public String getUtxo() {
+        return null;
+    }
 }
