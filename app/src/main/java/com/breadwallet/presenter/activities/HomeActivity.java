@@ -47,16 +47,19 @@ import com.breadwallet.BuildConfig;
 import com.breadwallet.R;
 import com.breadwallet.fch.AppUpdateTask;
 import com.breadwallet.fch.Cid;
+import com.breadwallet.fch.CidTask;
 import com.breadwallet.fch.DataCache;
 import com.breadwallet.fch.DownloadUtils;
 import com.breadwallet.fch.FchPriceTask;
 import com.breadwallet.fch.SpUtil;
 import com.breadwallet.fch.UpdateUtil;
 import com.breadwallet.fch.Utxo;
+import com.breadwallet.fch.UtxoTask;
 import com.breadwallet.presenter.activities.settings.SettingsActivity;
 import com.breadwallet.presenter.activities.util.BRActivity;
 import com.breadwallet.presenter.customviews.BRNotificationBar;
 import com.breadwallet.presenter.customviews.BaseTextView;
+import com.breadwallet.presenter.entities.TxUiHolder;
 import com.breadwallet.presenter.viewmodels.HomeViewModel;
 import com.breadwallet.tools.adapter.CidListAdapter;
 import com.breadwallet.tools.adapter.WalletListAdapter;
@@ -72,7 +75,12 @@ import com.breadwallet.ui.notification.InAppNotificationActivity;
 import com.breadwallet.ui.wallet.WalletActivity;
 import com.breadwallet.wallet.WalletsMaster;
 import com.breadwallet.wallet.abstracts.BaseWalletManager;
+import com.breadwallet.wallet.wallets.bitcoin.WalletFchManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletTokenManager;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -121,8 +129,6 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         mMenuLayout = findViewById(R.id.menu_layout);
         mListGroupLayout = findViewById(R.id.list_group_layout);
         mCidRecycler = findViewById(R.id.rv_cid_list);
-
-        initBroadcast();
 
         mTradeLayout.setOnClickListener(view -> {
             Toast.makeText(HomeActivity.this, "Coming soon", Toast.LENGTH_LONG).show();
@@ -213,11 +219,7 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         });
         mViewModel.checkForInAppNotification();
 
-        mAddress = SpUtil.getAddress(this);
-        mCids = SpUtil.getCid(this);
-        mDateCache.setCidList(mCids);
-        mDateCache.setSpendTxid(SpUtil.getTxid(this));
-        appUpdate();
+        initData();
     }
 
     @Override
@@ -265,13 +267,8 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         InternetManager.registerConnectionReceiver(this, this);
         onConnectionChanged(InternetManager.getInstance().isConnected(this));
 
-        LinkedBlockingQueue<Runnable> q = new LinkedBlockingQueue<Runnable>();
-        ExecutorService e = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, q);
-        new FchPriceTask(getApplicationContext()).executeOnExecutor(e);
-
-        updateUtxo();
-        updateAddress();
-        updateCid();
+        getUtxo();
+        refreshCid();
     }
 
     @Override
@@ -303,36 +300,6 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         buildInfoTextView.setVisibility(BuildConfig.BITCOIN_TESTNET || BuildConfig.DEBUG ? View.VISIBLE : View.GONE);
     }
 
-    public static final String ACTIVITY_ACTION = "ACTIVITY_ACTION";
-    public static final String ACTION_PRICE_UPDATE = "PRICE_UPDATE";
-    public static final String ACTION_APP_UPDATE = "APP_UPDATE";
-
-    private BroadcastReceiver mReceiver;
-
-    private void initBroadcast() {
-        BRSharedPrefs.putPreferredFiatIso(this, "CNY");
-
-        mDateCache = DataCache.getInstance();
-
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(ACTION_PRICE_UPDATE)) {
-                    mViewModel.refreshWallets();
-                } else if (intent.getAction().equals(ACTION_APP_UPDATE)) {
-                    String url = intent.getStringExtra("download");
-                    String version = intent.getStringExtra("version");
-                    Toast.makeText(HomeActivity.this, "检测到新版本,正在后台更新", Toast.LENGTH_LONG).show();
-                    prepare(url, version);
-                }
-            }
-        };
-
-        IntentFilter filter = new IntentFilter(ACTIVITY_ACTION);
-        filter.addAction(ACTION_APP_UPDATE);
-        filter.addAction(ACTION_APP_UPDATE);
-        registerReceiver(mReceiver, filter);
-    }
 
     private void appUpdate() {
         new AppUpdateTask(getApplicationContext()).execute();
@@ -379,82 +346,227 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         }
     }
 
-    private BaseWalletManager mWalletManager;
-    private List<Utxo> mUtxos = new ArrayList<Utxo>();
-    private List<Cid> mCids = new ArrayList<Cid>();
-    private List<String> mAddress = new ArrayList<String>();
-    private Map<String, Integer> mAddrBalance = new HashMap<String, Integer>();
     private RecyclerView mCidRecycler;
     private CidListAdapter mCidAdapter;
-    private DataCache mDateCache;
 
+    public static final String ACTIVITY_ACTION = "ACTIVITY_ACTION";
+    public static final String ACTION_PRICE_UPDATE = "PRICE_UPDATE";
+    public static final String ACTION_APP_UPDATE = "APP_UPDATE";
+    public static final String ACTION_UTXO_UPDATE = "UTXO_UPDATE";
+    public static final String ACTION_CID_UPDATE = "CID_UPDATE";
+    public static final String KEY_UTXO = "api_utxo";
+    public static final String KEY_CID = "api_cid";
+
+    private BaseWalletManager mWalletManager;
+    private DataCache mDateCache;
+    private BroadcastReceiver mReceiver;
+
+    private List<String> mAddressList = new ArrayList<String>();
+    private String mAddressString = "";
+    private List<Utxo> mUtxoList = new ArrayList<Utxo>();
+    private Map<String, Integer> mBalanceMap = new HashMap<String, Integer>();
     private int mTotalBalance = 0;
 
-    private void updateUtxo() {
-        mWalletManager = WalletsMaster.getInstance().getCurrentWallet(this);
-        String utxo = mWalletManager.getUtxo();
-        Log.e("####", "utxo = " + utxo);
+    private void initBroadcast() {
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(ACTION_PRICE_UPDATE)) {
+                    mViewModel.refreshWallets();
+                } else if (intent.getAction().equals(ACTION_APP_UPDATE)) {
+                    String url = intent.getStringExtra("download");
+                    String version = intent.getStringExtra("version");
+                    Toast.makeText(HomeActivity.this, "检测到新版本,正在后台更新", Toast.LENGTH_LONG).show();
+                    prepare(url, version);
+                } else if (intent.getAction().equals(ACTION_UTXO_UPDATE)) {
+                    String utxo = intent.getStringExtra(KEY_UTXO);
+                    refreshUtxo(utxo);
+                } else if (intent.getAction().equals(ACTION_CID_UPDATE)) {
+                    String data = intent.getStringExtra(KEY_CID);
+                    getCid(data);
+                }
+            }
+        };
 
-        mTotalBalance = 0;
-        mUtxos.clear();
-        mAddrBalance.clear();
-        if (utxo.length() < 60) {
+        IntentFilter filter = new IntentFilter(ACTIVITY_ACTION);
+        filter.addAction(ACTION_APP_UPDATE);
+        filter.addAction(ACTION_APP_UPDATE);
+        filter.addAction(ACTION_UTXO_UPDATE);
+        filter.addAction(ACTION_CID_UPDATE);
+        registerReceiver(mReceiver, filter);
+    }
+
+    private void initData() {
+        initBroadcast();
+
+        BRSharedPrefs.putPreferredFiatIso(this, "CNY");
+        mWalletManager = WalletsMaster.getInstance().getCurrentWallet(this);
+        mDateCache = DataCache.getInstance();
+
+        loadAddress();
+
+        mDateCache.setSpendTxid(SpUtil.getTxid(this));
+        mDateCache.setPendingList(SpUtil.getPending(this));
+
+        getLatestPrice();
+        initCid();
+        appUpdate();
+    }
+
+    private void loadAddress() {
+        mAddressList = SpUtil.getAddress(this);
+
+        if (mAddressList.isEmpty()) {
+            Log.e("####", "load address from tx history");
+            List<TxUiHolder> holders = mWalletManager.getTxUiHolders(this);
+            if (holders != null) {
+                for (TxUiHolder h : holders) {
+                    if (h.isReceived() && !mAddressList.contains(h.getTo())) {
+                        mAddressList.add(h.getTo());
+                    }
+                }
+            }
+        }
+
+        String a = mWalletManager.getAddress(this);
+        if (!mAddressList.contains(a)) {
+            mAddressList.add(a);
+            SpUtil.putAddress(this, mAddressList);
+        }
+        mDateCache.setAddressList(mAddressList);
+
+        int size = mAddressList.size();
+        for (int i = 0; i < size; ++i) {
+            mAddressString += mAddressList.get(i);
+            if (i != size - 1) {
+                mAddressString += ",";
+            }
+        }
+    }
+
+    private void initCid() {
+        List<Cid> list = SpUtil.getCid(this);
+        if (list.isEmpty()) {
+            LinkedBlockingQueue<Runnable> q = new LinkedBlockingQueue<Runnable>();
+            ExecutorService e = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, q);
+            new CidTask(getApplicationContext(), mAddressString).executeOnExecutor(e);
+        } else {
+            mDateCache.setCidList(list);
+        }
+    }
+
+    private void getLatestPrice() {
+        LinkedBlockingQueue<Runnable> q = new LinkedBlockingQueue<Runnable>();
+        ExecutorService e = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, q);
+        new FchPriceTask(getApplicationContext()).executeOnExecutor(e);
+    }
+
+    private void getUtxo() {
+        if (mAddressString.isEmpty()) {
+            Log.e("####", "ERROR getUtxo: mAddressString is empty");
             return;
         }
 
-        List<String> spendTxids = mDateCache.getSpendTxid();
+        LinkedBlockingQueue<Runnable> q = new LinkedBlockingQueue<Runnable>();
+        ExecutorService e = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, q);
+        new UtxoTask(HomeActivity.this, mAddressString).executeOnExecutor(e);
+    }
 
-        String[] strs = utxo.split(",");
-        for (int i = 0; i < strs.length; i += 4) {
+    private void refreshUtxo(String ss) {
+        List<Utxo> temp = new ArrayList<Utxo>();
+        List<String> txList = mDateCache.getSpendTxid();
 
-            if (spendTxids.contains(strs[i])) {
-                continue;
+        try {
+            JSONArray arr = new JSONArray(ss);
+            for (int i = 0; i < arr.length(); ++i) {
+                JSONObject obj = new JSONObject(arr.get(i).toString());
+                String txid = obj.getString("txid");
+                int vout = obj.getInt("vout");
+
+                if (txList.contains(txid + vout))
+                    continue;
+
+                String address = obj.getString("address");
+                String a = obj.getString("amount");
+                int amount = (int) (Double.parseDouble(a) * WalletFchManager.ONE_FCH);
+                Utxo u = new Utxo(txid, address, amount, vout);
+                temp.add(u);
             }
+        } catch (JSONException e) {
+            Log.e("####", "ERROR refreshUtxo: " + e.toString());
+        }
 
-            String addr = strs[i + 1];
-            int amount = Integer.parseInt(strs[i + 2]);
-            int n = Integer.parseInt(strs[i + 3]);
-            Log.e("####", "h = " + strs[i]);
-            Log.e("####", "a = " + addr);
-            Log.e("####", "v = " + amount);
-            Log.e("####", "n = " + n);
-            Utxo u = new Utxo(strs[i], addr, amount, n);
-            mUtxos.add(u);
+        List<Utxo> pList = mDateCache.getPendingList();
+        List<Utxo> res = temp;
+        List<Utxo> newPending = pList;
+        for (Utxo p : pList) {
+            if (temp.contains(p)) {
+                newPending.remove(p);
+            } else {
+                res.add(p);
+            }
+        }
+
+        if (newPending.isEmpty()) {
+            pList.clear();
+            txList.clear();
+            mDateCache.setPendingList(pList);
+            mDateCache.setSpendTxid(txList);
+            SpUtil.putPending(this, pList);
+            SpUtil.putTxid(this, txList);
+        }
+        mUtxoList = res;
+        mDateCache.setUtxoList(mUtxoList);
+
+        calculateBalance();
+        refreshCid();
+    }
+
+    private void calculateBalance() {
+        mBalanceMap.clear();
+        mTotalBalance = 0;
+        for (Utxo u : mUtxoList) {
+            String address = u.getAddress();
+            int amount = u.getAmount();
+            int value = amount;
+            if (mBalanceMap.containsKey(address)) {
+                value += mBalanceMap.get(address);
+            }
+            mBalanceMap.put(address, value);
 
             mTotalBalance += amount;
-
-            if (!mAddress.contains(addr)) {
-                mAddress.add(addr);
-            }
-
-            if (mAddrBalance.containsKey(addr)) {
-                int bal = mAddrBalance.get(addr);
-                bal += amount;
-                mAddrBalance.put(addr, bal);
-            } else {
-                mAddrBalance.put(addr, amount);
-            }
         }
-        mDateCache.setUtxoList(mUtxos);
+        mDateCache.setBalance(mBalanceMap);
+        Log.e("####", "mTotalBalance = " + mTotalBalance);
+        mDateCache.setTotalBalance(mTotalBalance);
+
+        BigDecimal bd = new BigDecimal(mTotalBalance);
+        String price = SpUtil.get(this, SpUtil.KEY_PRICE);
+        bd = bd.multiply(new BigDecimal(price)).divide(WalletFchManager.ONE_FCH_BD);
+        mFiatTotal.setText(CurrencyUtils.getFormattedAmount(this,
+                BRSharedPrefs.getPreferredFiatIso(this), bd));
+        mViewModel.refreshWallets();
     }
 
-    private void updateAddress() {
-        String addr = mWalletManager.getAddress(HomeActivity.this);
-        if (!mAddress.contains(addr)) {
-            mAddress.add(addr);
+    private void getCid(String data) {
+        List<Cid> list = new ArrayList<>();
+        try {
+            JSONArray arr = new JSONArray(data);
+            for (int i = 0; i < arr.length(); ++i) {
+                JSONObject obj = new JSONObject(arr.get(i).toString());
+                String address = obj.getString("address");
+                String name = obj.getString("cid");
+                list.add(new Cid(address, name));
+            }
+        } catch (JSONException e) {
+            Log.e("####", "ERROR getCid: " + e.toString());
         }
-        if (!mAddrBalance.containsKey(addr)) {
-            mAddrBalance.put(addr, 0);
-        }
-        mDateCache.setAddressList(mAddress);
-        mDateCache.setBalance(mAddrBalance);
-        SpUtil.putAddress(this, mAddress);
+        mDateCache.setCidList(list);
+        SpUtil.putCid(this, list);
     }
 
-    private void updateCid() {
-        mCids = mDateCache.getCidList();
-        Log.e("####", "cid.size = " + mCids.size());
-        mCidAdapter.setData(mCids);
+    private void refreshCid() {
+        mCidAdapter.setData(mDateCache.getCidList());
     }
 
     @Override

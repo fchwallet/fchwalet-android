@@ -60,6 +60,9 @@ public final class WalletFchManager extends BaseBitcoinWalletManager {
     private static final long MAINNET_FORK_TIME = 1501568580; // Tuesday, August 1, 2017 6:23:00 AM GMT in seconds since Epoch
     private static final long TESTNET_FORK_TIME = 1501597117; // Tuesday, August 1, 2017 2:18:37 PM GMT in seconds since Epoch
 
+    public static final double ONE_FCH = 100000000.0;
+    public static final BigDecimal ONE_FCH_BD = new BigDecimal(ONE_FCH);
+
     private static WalletFchManager mInstance;
 
     public static synchronized WalletFchManager getInstance(Context context) {

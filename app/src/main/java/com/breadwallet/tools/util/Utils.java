@@ -292,4 +292,12 @@ public class Utils {
         }
         return true;
     }
+
+    public static String reverse(String hash) {
+        String res = "";
+        for (int i = hash.length() - 2; i > -1; i-=2) {
+            res += hash.substring(i, i + 2);
+        }
+        return res;
+    }
 }

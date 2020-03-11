@@ -30,16 +30,17 @@ import com.breadwallet.tools.util.Utils;
 import com.breadwallet.wallet.WalletsMaster;
 import com.breadwallet.wallet.abstracts.BaseWalletManager;
 import com.breadwallet.wallet.wallets.CryptoTransaction;
+import com.breadwallet.wallet.wallets.bitcoin.WalletFchManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class CidActivity extends BRActivity {
 
     private final static String TARGET = "F9A9TgNE2ixYhQmEnB15BNYcEuCvZvzqxT";
     private final static String PRE_DATA = "FEIP|3|1|";
-    private final static double ONE_FCH = 100000000.0;
-    private final static int MIN_BALANCE = 1000000;
+    private final static int MIN_BALANCE = 1010000;
     private final static int TARGET_BALANCE = 1000000;
 
     private BaseWalletManager mWalletManager;
@@ -59,8 +60,7 @@ public class CidActivity extends BRActivity {
     private String mTag = "";
     private int mTotal;
     private int mFee;
-
-    private List<String> txids = new ArrayList<String>();
+    private int mCharge;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -88,7 +88,7 @@ public class CidActivity extends BRActivity {
                 mAddress = addresses.get(pos);
                 if (mDataCache.getBalance().containsKey(mAddress)) {
                     int balance = mDataCache.getBalance().get(mAddress);
-                    double b = balance / ONE_FCH;
+                    double b = balance / WalletFchManager.ONE_FCH;
                     mTvBalance.setText("余额： " + b + " FCH");
                 } else {
                     mTvBalance.setText("余额： 0.0 FCH");
@@ -104,11 +104,8 @@ public class CidActivity extends BRActivity {
         mBtnCreate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!mDataCache.getBalance().containsKey(mAddress)) {
-                    Toast.makeText(CidActivity.this, "余额不足", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if (mDataCache.getBalance().get(mAddress) < MIN_BALANCE) {
+                Map<String, Integer> map = mDataCache.getBalance();
+                if (!map.containsKey(mAddress) || map.get(mAddress) < MIN_BALANCE) {
                     Toast.makeText(CidActivity.this, "余额不足", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -133,14 +130,11 @@ public class CidActivity extends BRActivity {
         for (Utxo u : list) {
             if (u.getAddress().equalsIgnoreCase(mAddress)) {
                 mTotal += u.getAmount();
-                mFee += 1000;
+                mFee += 600;
                 mUtxos.add(u);
-                if (mTotal >= mFee + TARGET_BALANCE) {
-                    return true;
-                }
             }
         }
-        return false;
+        return mTotal >= (mFee + TARGET_BALANCE);
     }
 
     private void createCid(String data) {
@@ -151,10 +145,10 @@ public class CidActivity extends BRActivity {
         BRCoreAddress inAddress = new BRCoreAddress(mAddress);
         byte[] inScript = inAddress.getPubKeyScript();
         for (Utxo u : mUtxos) {
-            byte[] hash = Utils.hexToBytes(u.getTxid());
+            String s = Utils.reverse(u.getTxid());
+            byte[] hash = Utils.hexToBytes(s);
             BRCoreTransactionInput in = new BRCoreTransactionInput(hash, u.getVout(), u.getAmount(), inScript, empty, empty, sequence);
             tx.addInput(in);
-            txids.add(u.getTxid());
         }
 
         BRCoreAddress targetAddress = new BRCoreAddress(TARGET);
@@ -162,9 +156,9 @@ public class CidActivity extends BRActivity {
         BRCoreTransactionOutput out = new BRCoreTransactionOutput(TARGET_BALANCE, targetScript);
         tx.addOutput(out);
 
-        int left = mTotal - mFee - TARGET_BALANCE;
-        if (left > 99) {
-            BRCoreTransactionOutput charge = new BRCoreTransactionOutput(left, inScript);
+        mCharge = mTotal - mFee - TARGET_BALANCE;
+        if (mCharge > 99) {
+            BRCoreTransactionOutput charge = new BRCoreTransactionOutput(mCharge, inScript);
             tx.addOutput(charge);
         }
 
@@ -175,7 +169,6 @@ public class CidActivity extends BRActivity {
         } else {
             hexData = "6a" + Integer.toHexString(len) + hexData;
         }
-        Log.e("####", "data = " + hexData);
         BRCoreTransactionOutput dataOut = new BRCoreTransactionOutput(0, Utils.hexToBytes(hexData));
         tx.addOutput(dataOut);
 
@@ -194,10 +187,9 @@ public class CidActivity extends BRActivity {
                 byte[] txid = mWalletManager.signAndPublishTransaction(transaction, rawPhrase);
                 if (txid.length > 0) {
                     Toast.makeText(CidActivity.this, "创建成功", Toast.LENGTH_SHORT).show();
-                    saveCid(Utils.bytesToHex(txid));
+                    updateUtxo(Utils.bytesToHex(txid));
                     finish();
                 } else {
-                    txids.clear();
                     Toast.makeText(CidActivity.this, "创建失败", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -209,11 +201,36 @@ public class CidActivity extends BRActivity {
         });
     }
 
-    private void saveCid(String txid) {
+    private void updateUtxo(String txid) {
+        List<String> txs = mDataCache.getSpendTxid();
+        List<Utxo> pending = mDataCache.getPendingList();
+
+        for (Utxo u : mUtxos) {
+            String s = u.getTxid() + u.getVout();
+            txs.add(s);
+
+            if (pending.contains(u)) {
+                pending.remove(u);
+            }
+        }
+        mDataCache.setSpendTxid(txs);
+        SpUtil.putTxid(this, txs);
+
+        if (mCharge > 99) {
+            Utxo charge = new Utxo(Utils.reverse(txid), mAddress, mCharge, 1);
+            pending.add(charge);
+        }
+        mDataCache.setPendingList(pending);
+        SpUtil.putPending(this, pending);
+
+        saveCid();
+    }
+
+    private void saveCid() {
         String name = mName + "_" + mAddress.substring(30);
         List<Cid> list = mDataCache.getCidList();
 
-        Cid cid = new Cid(mAddress, name, txid);
+        Cid cid = new Cid(mAddress, name);
         for (Cid c : list) {
             if (c.getAddress().equalsIgnoreCase(mAddress)) {
                 list.remove(c);
@@ -223,11 +240,6 @@ public class CidActivity extends BRActivity {
         list.add(cid);
         mDataCache.setCidList(list);
         SpUtil.putCid(this, list);
-
-        List<String> txs = mDataCache.getSpendTxid();
-        txs.addAll(txids);
-        mDataCache.setSpendTxid(txs);
-        SpUtil.putTxid(this, txs);
     }
 
     public String stringToHex(String s) {

@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.breadwallet.R;
+import com.breadwallet.fch.DataCache;
 import com.breadwallet.fch.SpUtil;
 import com.breadwallet.model.PriceChange;
 import com.breadwallet.model.Wallet;
@@ -27,6 +28,7 @@ import com.breadwallet.tools.util.Utils;
 import com.breadwallet.wallet.WalletsMaster;
 import com.breadwallet.wallet.configs.WalletUiConfiguration;
 import com.breadwallet.wallet.wallets.bitcoin.BaseBitcoinWalletManager;
+import com.breadwallet.wallet.wallets.bitcoin.WalletFchManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletTokenManager;
 import com.squareup.picasso.Picasso;
 
@@ -129,8 +131,8 @@ public class WalletListAdapter extends RecyclerView.Adapter<WalletListAdapter.Wa
      * Binds the wallet data, specified by the given index, to the view holder, as well as rendering
      * any other display elements (icons, colours, etc.).
      *
-     * @param holderView   The view holder to be bound and rendered.
-     * @param position The index of the view holder (and wallet).
+     * @param holderView The view holder to be bound and rendered.
+     * @param position   The index of the view holder (and wallet).
      */
     @Override
     public void onBindViewHolder(WalletItemViewHolder holderView, int position) {
@@ -146,26 +148,15 @@ public class WalletListAdapter extends RecyclerView.Adapter<WalletListAdapter.Wa
             String name = wallet.getName();
             String currencyCode = wallet.getCurrencyCode();
 
-            BigDecimal bigExchangeRate = wallet.getExchangeRate();
-            BigDecimal bigFiatBalance = wallet.getFiatBalance();
-
-            if (name.equalsIgnoreCase("xsv")) {
-                double rate = BRSharedPrefs.getPreferredFiatIso(mContext).equalsIgnoreCase("usd") ? 0.14286 : 1;
-                bigExchangeRate = new BigDecimal(rate);
-                BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
-                bigFiatBalance = bigExchangeRate.multiply(wallet.getCryptoBalance()).divide(sato);
-            }
-
-            if (name.equalsIgnoreCase("fch")) {
-                bigExchangeRate = new BigDecimal(SpUtil.get(mContext, "price"));
-                BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
-                bigFiatBalance = bigExchangeRate.multiply(wallet.getCryptoBalance()).divide(sato);
-            }
+            BigDecimal tb = new BigDecimal(DataCache.getInstance().getTotalBalance());
+            BigDecimal balance = tb.divide(WalletFchManager.ONE_FCH_BD);
+            BigDecimal bigExchangeRate = new BigDecimal(SpUtil.get(mContext, "price"));
+            BigDecimal bigFiatBalance = balance.multiply(bigExchangeRate);
 
             // Format numeric data
             String exchangeRate = CurrencyUtils.getFormattedAmount(mContext, BRSharedPrefs.getPreferredFiatIso(mContext), bigExchangeRate);
             String fiatBalance = CurrencyUtils.getFormattedAmount(mContext, BRSharedPrefs.getPreferredFiatIso(mContext), bigFiatBalance);
-            String cryptoBalance = CurrencyUtils.getFormattedAmount(mContext, wallet.getCurrencyCode(), wallet.getCryptoBalance());
+            String cryptoBalance = CurrencyUtils.getFormattedAmount(mContext, wallet.getCurrencyCode(), tb);
 
             // Set wallet fields
             decoratedHolderView.mWalletName.setText(name);
@@ -186,11 +177,6 @@ public class WalletListAdapter extends RecyclerView.Adapter<WalletListAdapter.Wa
             decoratedHolderView.mPriceChange.setVisibility(priceChange != null ? View.VISIBLE : View.INVISIBLE);
             if (priceChange != null) {
                 decoratedHolderView.mPriceChange.setText(priceChange.getPercentageChange());
-            }
-
-            if (name.equalsIgnoreCase("xsv")) {
-                decoratedHolderView.mPriceChange.setVisibility(View.VISIBLE);
-                decoratedHolderView.mPriceChange.setText("0.00%");
             }
 
             if (name.equalsIgnoreCase("fch")) {
