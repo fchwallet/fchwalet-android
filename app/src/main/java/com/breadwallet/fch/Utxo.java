@@ -1,6 +1,7 @@
 package com.breadwallet.fch;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 public class Utxo {
 
@@ -46,6 +47,16 @@ public class Utxo {
 
     public void setVout(int vout) {
         this.vout = vout;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (obj instanceof Utxo) {
+            Utxo u = (Utxo) obj;
+            return u.getTxid().equalsIgnoreCase(txid) && u.getVout() == vout;
+        } else {
+            return super.equals(obj);
+        }
     }
 
     @NonNull

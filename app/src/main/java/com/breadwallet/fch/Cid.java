@@ -6,14 +6,12 @@ public class Cid {
 
     private String address;
     private String name;
-    private String txid;
 
     public Cid () {}
 
-    public Cid (String address, String name, String txid) {
+    public Cid (String address, String name) {
         this.address = address;
         this.name = name;
-        this.txid = txid;
     }
 
     public String getAddress() {
@@ -24,16 +22,8 @@ public class Cid {
         return name;
     }
 
-    public String getTxid() {
-        return txid;
-    }
-
     public void setAddress(String address) {
         this.address = address;
-    }
-
-    public void setTxid(String txid) {
-        this.txid = txid;
     }
 
     public void setName(String name) {
@@ -43,6 +33,6 @@ public class Cid {
     @NonNull
     @Override
     public String toString() {
-        return "[" + address + "," + name + "," + txid + "]";
+        return "[" + address + "," + name + "]";
     }
 }
