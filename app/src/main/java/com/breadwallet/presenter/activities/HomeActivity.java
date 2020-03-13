@@ -488,7 +488,8 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
 
                 String address = obj.getString("address");
                 String a = obj.getString("amount");
-                int amount = (int) (Double.parseDouble(a) * WalletFchManager.ONE_FCH);
+                BigDecimal bd = new BigDecimal(a).multiply(WalletFchManager.ONE_FCH_BD);
+                int amount = bd.intValue();
                 Utxo u = new Utxo(txid, address, amount, vout);
                 temp.add(u);
             }

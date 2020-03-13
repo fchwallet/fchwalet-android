@@ -1,7 +1,6 @@
 package com.breadwallet.presenter.activities;
 
 import android.os.Bundle;
-import android.security.keystore.UserNotAuthenticatedException;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
@@ -22,16 +21,17 @@ import com.breadwallet.fch.DataCache;
 import com.breadwallet.fch.SpUtil;
 import com.breadwallet.fch.Utxo;
 import com.breadwallet.presenter.activities.util.BRActivity;
-import com.breadwallet.presenter.interfaces.BRAuthCompletion;
-import com.breadwallet.tools.security.AuthManager;
-import com.breadwallet.tools.security.BRKeyStore;
-import com.breadwallet.tools.util.BRConstants;
+import com.breadwallet.presenter.entities.CryptoRequest;
+import com.breadwallet.tools.animation.UiUtils;
+import com.breadwallet.tools.manager.SendManager;
+import com.breadwallet.tools.threads.executor.BRExecutor;
 import com.breadwallet.tools.util.Utils;
 import com.breadwallet.wallet.WalletsMaster;
 import com.breadwallet.wallet.abstracts.BaseWalletManager;
 import com.breadwallet.wallet.wallets.CryptoTransaction;
 import com.breadwallet.wallet.wallets.bitcoin.WalletFchManager;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -130,7 +130,7 @@ public class CidActivity extends BRActivity {
         for (Utxo u : list) {
             if (u.getAddress().equalsIgnoreCase(mAddress)) {
                 mTotal += u.getAmount();
-                mFee += 600;
+                mFee += 500;
                 mUtxos.add(u);
             }
         }
@@ -173,31 +173,21 @@ public class CidActivity extends BRActivity {
         tx.addOutput(dataOut);
 
         CryptoTransaction transaction = new CryptoTransaction(tx);
-
-        AuthManager.getInstance().authPrompt(CidActivity.this, getString(R.string.VerifyPin_touchIdMessage), "", false, false, new BRAuthCompletion() {
-            @Override
-            public void onComplete() {
-                final byte[] rawPhrase;
-                try {
-                    rawPhrase = BRKeyStore.getPhrase(CidActivity.this, BRConstants.PAY_REQUEST_CODE);
-                } catch (UserNotAuthenticatedException e) {
-                    Log.e("####", "UserNotAuthenticatedException");
-                    return;
-                }
-                byte[] txid = mWalletManager.signAndPublishTransaction(transaction, rawPhrase);
-                if (txid.length > 0) {
-                    Toast.makeText(CidActivity.this, "创建成功", Toast.LENGTH_SHORT).show();
-                    updateUtxo(Utils.bytesToHex(txid));
+        final CryptoRequest item = new CryptoRequest.Builder().setAddress(TARGET).setAmount(new BigDecimal(TARGET_BALANCE)).build();
+        BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(() -> {
+            SendManager.sendTransaction2(this, item, transaction, mWalletManager, (txHash, succeeded) -> {
+                if (!Utils.isNullOrEmpty(txHash) && succeeded) {
+                    UiUtils.showBreadSignal(this, getString(R.string.Alerts_sendSuccess),
+                            getString(R.string.Alerts_sendSuccessSubheader), R.drawable.ic_check_mark_white, () -> UiUtils.killAllFragments(this));
+                    Log.e("####", "txHash = " + txHash);
+                    updateUtxo(txHash);
                     finish();
                 } else {
-                    Toast.makeText(CidActivity.this, "创建失败", Toast.LENGTH_SHORT).show();
+                    UiUtils.showBreadSignal(this, getString(R.string.Alert_error),
+                            getString(R.string.Alerts_sendFailure), R.drawable.ic_error_outline_black_24dp, () -> UiUtils.killAllFragments(this));
                 }
-            }
 
-            @Override
-            public void onCancel() {
-
-            }
+            });
         });
     }
 
@@ -217,7 +207,7 @@ public class CidActivity extends BRActivity {
         SpUtil.putTxid(this, txs);
 
         if (mCharge > 99) {
-            Utxo charge = new Utxo(Utils.reverse(txid), mAddress, mCharge, 1);
+            Utxo charge = new Utxo(txid, mAddress, mCharge, 1);
             pending.add(charge);
         }
         mDataCache.setPendingList(pending);

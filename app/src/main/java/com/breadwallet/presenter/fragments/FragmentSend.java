@@ -20,10 +20,17 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.breadwallet.BuildConfig;
 import com.breadwallet.R;
+import com.breadwallet.core.BRCoreAddress;
+import com.breadwallet.core.BRCoreTransaction;
+import com.breadwallet.core.BRCoreTransactionInput;
+import com.breadwallet.core.BRCoreTransactionOutput;
+import com.breadwallet.fch.DataCache;
 import com.breadwallet.fch.SpUtil;
+import com.breadwallet.fch.Utxo;
 import com.breadwallet.model.FeeOption;
 import com.breadwallet.ui.wallet.WalletActivity;
 import com.breadwallet.presenter.customviews.BRButton;
@@ -48,11 +55,16 @@ import com.breadwallet.tools.util.Utils;
 import com.breadwallet.wallet.WalletsMaster;
 import com.breadwallet.wallet.util.CryptoUriParser;
 import com.breadwallet.wallet.abstracts.BaseWalletManager;
+import com.breadwallet.wallet.wallets.CryptoTransaction;
 import com.breadwallet.wallet.wallets.bitcoin.BaseBitcoinWalletManager;
+import com.breadwallet.wallet.wallets.bitcoin.WalletFchManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletEthManager;
 import com.platform.HTTPServer;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -193,6 +205,7 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
 
         mSignalLayout.setLayoutTransition(UiUtils.getDefaultTransition());
 
+        mDataCache = DataCache.getInstance();
         return rootView;
     }
 
@@ -358,14 +371,13 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
         mCurrencyCodeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mSelectedCurrencyCode.equalsIgnoreCase(BRSharedPrefs.getPreferredFiatIso(getContext()))) {
-                    Activity app = getActivity();
-                    mSelectedCurrencyCode = WalletsMaster.getInstance().getCurrentWallet(app).getCurrencyCode();
-                } else {
-                    mSelectedCurrencyCode = BRSharedPrefs.getPreferredFiatIso(getContext());
-                }
-                updateText();
-
+//                if (mSelectedCurrencyCode.equalsIgnoreCase(BRSharedPrefs.getPreferredFiatIso(getContext()))) {
+//                    Activity app = getActivity();
+//                    mSelectedCurrencyCode = WalletsMaster.getInstance().getCurrentWallet(app).getCurrencyCode();
+//                } else {
+//                    mSelectedCurrencyCode = BRSharedPrefs.getPreferredFiatIso(getContext());
+//                }
+//                updateText();
             }
         });
 
@@ -429,7 +441,9 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
                     SpringAnimator.failShakeAnimation(getActivity(), mAmountEdit);
                 }
 
-                if (cryptoAmount.compareTo(wm.getBalance()) > 0) {
+                BigDecimal total = new BigDecimal(mDataCache.getTotalBalance());
+//                if (cryptoAmount.compareTo(wm.getBalance()) > 0) {
+                if (cryptoAmount.compareTo(total) > 0) {
                     allFilled = false;
                     SpringAnimator.failShakeAnimation(getActivity(), mBalanceText);
                     SpringAnimator.failShakeAnimation(getActivity(), mFeeText);
@@ -450,19 +464,41 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
                 }
 
                 if (allFilled) {
+
+                    BRCoreTransaction tx = buildTx(req.getAddress(), cryptoAmount.intValue());
+                    if (tx == null) {
+                        Toast.makeText(activity, "手续费不足", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+//                    BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(() -> {
+//                        SendManager.sendTransaction(activity, item, wm, (transactionHash, succeeded) -> {
+//                            // Show success or error message
+//                            if (!Utils.isNullOrEmpty(transactionHash) && succeeded) {
+//                                UiUtils.showBreadSignal(activity, activity.getString(R.string.Alerts_sendSuccess),
+//                                        activity.getString(R.string.Alerts_sendSuccessSubheader), R.drawable.ic_check_mark_white, () -> UiUtils.killAllFragments(activity));
+//                            } else {
+//                                UiUtils.showBreadSignal(activity, activity.getString(R.string.Alert_error),
+//                                        activity.getString(R.string.Alerts_sendFailure), R.drawable.ic_error_outline_black_24dp, () -> UiUtils.killAllFragments(activity));
+//                            }
+//
+//                        });
+//                    });
+
+                    CryptoTransaction transaction = new CryptoTransaction(tx);
                     final CryptoRequest item = new CryptoRequest.Builder().setAddress(req.getAddress()).setAmount(cryptoAmount).setMessage(comment).build();
 
                     BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(() -> {
-                        SendManager.sendTransaction(activity, item, wm, (transactionHash, succeeded) -> {
-                            // Show success or error message
-                            if (!Utils.isNullOrEmpty(transactionHash) && succeeded) {
+                        SendManager.sendTransaction2(getActivity(), item, transaction, wm, (txHash, succeeded) -> {
+                            if (!Utils.isNullOrEmpty(txHash) && succeeded) {
                                 UiUtils.showBreadSignal(activity, activity.getString(R.string.Alerts_sendSuccess),
-                                    activity.getString(R.string.Alerts_sendSuccessSubheader), R.drawable.ic_check_mark_white, () -> UiUtils.killAllFragments(activity));
+                                        activity.getString(R.string.Alerts_sendSuccessSubheader), R.drawable.ic_check_mark_white, () -> UiUtils.killAllFragments(activity));
+                                Log.e("####", "txHash = " + txHash);
+                                updateUtxo(activity, txHash);
                             } else {
                                 UiUtils.showBreadSignal(activity, activity.getString(R.string.Alert_error),
-                                    activity.getString(R.string.Alerts_sendFailure), R.drawable.ic_error_outline_black_24dp, () -> UiUtils.killAllFragments(activity));
+                                        activity.getString(R.string.Alerts_sendFailure), R.drawable.ic_error_outline_black_24dp, () -> UiUtils.killAllFragments(activity));
                             }
-
                         });
                     });
                     closeWithAnimation();
@@ -678,7 +714,10 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
         String balanceString;
         if (mSelectedCurrencyCode == null)
             mSelectedCurrencyCode = wm.getCurrencyCode();
-        BigDecimal mCurrentBalance = wm.getBalance();
+//        BigDecimal mCurrentBalance = wm.getBalance();
+
+        int tb = mDataCache.getTotalBalance();
+        BigDecimal mCurrentBalance = new BigDecimal(tb);
         if (!mIsAmountLabelShown) {
             mCurrencyCode.setText(CurrencyUtils.getSymbolByIso(context, mSelectedCurrencyCode));
         }
@@ -694,18 +733,13 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
 
         //wallet's balance for the selected ISO
         BigDecimal isoBalance = isIsoCrypto ? wm.getCryptoForSmallestCrypto(context, mCurrentBalance) : wm.getFiatForSmallestCrypto(context, mCurrentBalance, null);
-        if (wm.getName().equalsIgnoreCase("xsv")) {
-            double rate = mSelectedCurrencyCode.equalsIgnoreCase("usd") ? 0.14286 : 1;
-            isoBalance = mCurrentBalance.multiply(new BigDecimal(rate)).divide(new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS));
-        }
 
         if (wm.getName().equalsIgnoreCase("fch")) {
-            BigDecimal sato = new BigDecimal(BaseBitcoinWalletManager.ONE_BITCOIN_IN_SATOSHIS);
             BigDecimal price = new BigDecimal(1);
             if (mSelectedCurrencyCode.equalsIgnoreCase("CNY")) {
-                price = new BigDecimal(SpUtil.get(getContext(), "price"));
+                price = new BigDecimal(SpUtil.get(getContext(), SpUtil.KEY_PRICE));
             }
-            isoBalance = mCurrentBalance.multiply(price).divide(sato);
+            isoBalance = mCurrentBalance.multiply(price).divide(WalletFchManager.ONE_FCH_BD);
         }
 
         if (isoBalance == null) isoBalance = BigDecimal.ZERO;
@@ -770,6 +804,7 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
 
     /**
      * Sets the given fee option as selected.
+     *
      * @param feeOption the fee option to be selected
      */
     private void setFeeOption(FeeOption feeOption) {
@@ -908,4 +943,81 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
     public static void setIsSendShown(boolean isSendShown) {
         mIsSendShown = isSendShown;
     }
+
+
+    private DataCache mDataCache;
+    private String mAddress = "";
+    private int mCharge = 0;
+
+    private BRCoreTransaction buildTx(String target, int amount) {
+        BRCoreTransaction tx = new BRCoreTransaction();
+        byte[] empty = new byte[]{};
+        long sequence = 4294967295L;
+
+        List<Utxo> utxos = mDataCache.getUtxoList();
+        int total = 0;
+        int fee = 500;
+        for (Utxo u : utxos) {
+            String s = Utils.reverse(u.getTxid());
+            byte[] hash = Utils.hexToBytes(s);
+            BRCoreAddress inAddress = new BRCoreAddress(u.getAddress());
+            byte[] inScript = inAddress.getPubKeyScript();
+            BRCoreTransactionInput in = new BRCoreTransactionInput(hash, u.getVout(), u.getAmount(), inScript, empty, empty, sequence);
+            tx.addInput(in);
+            total += u.getAmount();
+            fee += 500;
+
+            if (mAddress.isEmpty()) {
+                mAddress = u.getAddress();
+            }
+        }
+
+        BRCoreAddress targetAddress = new BRCoreAddress(target);
+        byte[] targetScript = targetAddress.getPubKeyScript();
+        BRCoreTransactionOutput out = new BRCoreTransactionOutput(amount, targetScript);
+        tx.addOutput(out);
+
+        mCharge = total - fee - amount;
+        if (mCharge > 99) {
+            byte[] chargeScript = new BRCoreAddress(mAddress).getPubKeyScript();
+            BRCoreTransactionOutput charge = new BRCoreTransactionOutput(mCharge, chargeScript);
+            tx.addOutput(charge);
+        }
+        if (mCharge < 0) {
+            return null;
+        }
+        return tx;
+    }
+
+    private void updateUtxo(Activity activity, String txid) {
+        List<String> txs = mDataCache.getSpendTxid();
+        List<Utxo> pending = mDataCache.getPendingList();
+
+        for (Utxo u : mDataCache.getUtxoList()) {
+            String s = u.getTxid() + u.getVout();
+            txs.add(s);
+
+            if (pending.contains(u)) {
+                pending.remove(u);
+            }
+        }
+        mDataCache.setSpendTxid(txs);
+        SpUtil.putTxid(activity, txs);
+
+        Map<String, Integer> map = new HashMap<String, Integer>();
+        if (mCharge > 99) {
+            Utxo charge = new Utxo(txid, mAddress, mCharge, 1);
+            pending.add(charge);
+            map.put(mAddress, mCharge);
+            mDataCache.setTotalBalance(mCharge);
+        } else {
+            mDataCache.setTotalBalance(0);
+        }
+        mDataCache.setPendingList(pending);
+        SpUtil.putPending(activity, pending);
+
+        mDataCache.setUtxoList(pending);
+        mDataCache.setBalance(map);
+    }
+
 }

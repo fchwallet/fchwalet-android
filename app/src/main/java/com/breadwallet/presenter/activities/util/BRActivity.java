@@ -131,7 +131,7 @@ public abstract class BRActivity extends FragmentActivity {
                     BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(new Runnable() {
                         @Override
                         public void run() {
-                            PostAuth.getInstance().onPublishTxAuth(BRActivity.this, null, true, null);
+                            PostAuth.getInstance().onPublishTxAuth2(BRActivity.this, null, true, null);
                         }
                     });
                 }

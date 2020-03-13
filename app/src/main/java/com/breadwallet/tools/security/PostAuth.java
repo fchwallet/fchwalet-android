@@ -81,6 +81,8 @@ public class PostAuth {
     private CryptoTransaction mPaymentProtocolTx;
     private static PostAuth mInstance;
 
+    private CryptoTransaction mTx;
+
     private PostAuth() {
     }
 
@@ -399,6 +401,10 @@ public class PostAuth {
         this.mCryptoRequest = cryptoRequest;
     }
 
+    public void setTx(CryptoTransaction tx) {
+        this.mTx = tx;
+    }
+
     public void setTmpPaymentRequestTx(CryptoTransaction tx) {
         this.mPaymentProtocolTx = tx;
     }
@@ -420,11 +426,11 @@ public class PostAuth {
         /**
          * Constructor takes various state variables that are necessary when processing transaction events
          *
-         * @param context the application context
+         * @param context          the application context
          * @param walletEthManager reference to the WalletEthManager
-         * @param transaction the transaction for which this listener is listening to events
-         * @param rawPhrase the phrase used in processing transactions
-         * @param timeoutTimer the timer that signals when a timeout has occurred
+         * @param transaction      the transaction for which this listener is listening to events
+         * @param rawPhrase        the phrase used in processing transactions
+         * @param timeoutTimer     the timer that signals when a timeout has occurred
          */
         TransactionEventListener(Context context, WalletEthManager walletEthManager, CryptoTransaction transaction, byte[] rawPhrase, Timer timeoutTimer) {
             mContext = context;
@@ -445,6 +451,65 @@ public class PostAuth {
                         continueWithPayment(mContext, mRawPhrase, mTransaction);
                 }
             }
+        }
+    }
+
+    @WorkerThread
+    public void onPublishTxAuth2(final Context context, final BaseWalletManager wm, final boolean authAsked, final SendManager.SendCompletion completion) {
+        if (completion != null) {
+            mSendCompletion = completion;
+        }
+        if (wm != null) mWalletManager = wm;
+        final byte[] rawPhrase;
+        try {
+            rawPhrase = BRKeyStore.getPhrase(context, BRConstants.PAY_REQUEST_CODE);
+        } catch (UserNotAuthenticatedException e) {
+            if (authAsked) {
+                Log.e(TAG, "onPublishTxAuth2: WARNING! Authentication Loop bug");
+                mAuthLoopBugHappened = true;
+            }
+            return;
+        }
+
+        try {
+            if (rawPhrase.length > 0) {
+                if (mCryptoRequest != null && mCryptoRequest.getAmount() != null && mCryptoRequest.getAddress() != null) {
+
+                    mTxMetaData = new TxMetaData();
+                    mTxMetaData.comment = mCryptoRequest.getMessage();
+                    mTxMetaData.exchangeCurrency = BRSharedPrefs.getPreferredFiatIso(context);
+                    BigDecimal fiatExchangeRate = mWalletManager.getFiatExchangeRate(context);
+                    mTxMetaData.exchangeRate = fiatExchangeRate == null ? 0 : fiatExchangeRate.doubleValue();
+                    mTxMetaData.fee = mWalletManager.getTxFee(mTx).toPlainString();
+                    mTxMetaData.txSize = mTx.getTxSize().intValue();
+                    mTxMetaData.blockHeight = BRSharedPrefs.getLastBlockHeight(context, mWalletManager.getCurrencyCode());
+                    mTxMetaData.creationTime = (int) (System.currentTimeMillis() / DateUtils.SECOND_IN_MILLIS);
+                    mTxMetaData.deviceId = BRSharedPrefs.getDeviceId(context);
+                    mTxMetaData.classVersion = 1;
+
+                    continueWithPayment2(context, rawPhrase, mTx);
+
+                } else {
+                    throw new NullPointerException("payment item is null");
+                }
+            } else {
+                Log.e(TAG, "onPublishTxAuth: paperKey length is 0!");
+                BRReportsManager.reportBug(new NullPointerException("onPublishTxAuth: paperKey length is 0"));
+                return;
+            }
+        } finally {
+            mCryptoRequest = null;
+        }
+    }
+
+    private void continueWithPayment2(final Context context, byte[] rawPhrase, CryptoTransaction transaction) {
+        final byte[] txHash = mWalletManager.signAndPublishTransaction(transaction, rawPhrase);
+        if (!Utils.isNullOrEmpty(txHash)) {
+            if (mSendCompletion != null) {
+                mSendCompletion.onCompleted(transaction.getHash(), true);
+                mSendCompletion = null;
+            }
+            stampMetaData(context, txHash);
         }
     }
 

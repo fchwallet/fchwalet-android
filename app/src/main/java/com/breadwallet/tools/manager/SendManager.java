@@ -34,6 +34,7 @@ import com.breadwallet.wallet.exceptions.FeeOutOfDate;
 import com.breadwallet.wallet.exceptions.InsufficientFundsException;
 import com.breadwallet.wallet.exceptions.SomethingWentWrong;
 import com.breadwallet.wallet.exceptions.SpendingNotAllowed;
+import com.breadwallet.wallet.wallets.CryptoTransaction;
 import com.breadwallet.wallet.wallets.bitcoin.BaseBitcoinWalletManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBchManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletBitcoinManager;
@@ -442,4 +443,76 @@ public class SendManager {
         void onCompleted(String hash, boolean succeed);
     }
 
+    @WorkerThread
+    public static boolean sendTransaction2(Context app, final CryptoRequest payment, final CryptoTransaction tx, final BaseWalletManager walletManager, final SendCompletion completion) {
+        if (sending) {
+            Log.e(TAG, "sendTransaction2: already sending..");
+            return false;
+        }
+        if (!(app instanceof Activity)) {
+            app = BreadApp.getBreadContext();
+        }
+        sending = true;
+        if (!timedOut)
+            tryPay2(app, payment, tx, walletManager, completion);
+        else
+            BRReportsManager.reportBug(new NullPointerException("did not send, timedOut!"));
+
+        sending = false;
+        timedOut = false;
+        return true;
+    }
+
+    private static void tryPay2(final Context app, final CryptoRequest paymentRequest, final CryptoTransaction tx, final BaseWalletManager walletManager, final SendCompletion completion) {
+        PostAuth.getInstance().setPaymentItem(paymentRequest);
+        PostAuth.getInstance().setTx(tx);
+        confirmPay2(app, paymentRequest, tx, walletManager, completion);
+    }
+
+    private static void confirmPay2(final Context ctx, final CryptoRequest request, final CryptoTransaction tx, final BaseWalletManager wm, final SendCompletion completion) {
+        if (ctx == null) {
+            Log.e(TAG, "confirmPay2: context is null");
+            return;
+        }
+
+        TxConfirmationDetail confirmationDetail = createConfirmation(ctx, request, wm);
+        if (confirmationDetail == null) {
+            BRDialog.showSimpleDialog(ctx, "Failed", "Confirmation message failed");
+            return;
+        }
+
+        if (!(ctx instanceof Activity)) {
+            return;
+        }
+        Activity host = (Activity) ctx;
+
+        final boolean forcePin = wm.getTotalSent(ctx).add(request.getAmount()).compareTo(BRKeyStore.getTotalLimit(ctx, wm.getCurrencyCode())) > 0;
+
+        TxDetailConfirmationFragment txDetailFragment = TxDetailConfirmationFragment.Companion.newInstance(
+                confirmationDetail,
+                () -> { // onAccept : request user auth
+                    AuthManager.getInstance().authPrompt(ctx, ctx.getString(R.string.VerifyPin_touchIdMessage), "", forcePin, false, new BRAuthCompletion() {
+                        @Override
+                        public void onComplete() {
+                            BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(() -> {
+                                PostAuth.getInstance().onPublishTxAuth2(ctx, wm, false, completion);
+                                BRExecutor.getInstance().forMainThreadTasks().execute(() -> UiUtils.killAllFragments(host));
+                            });
+                        }
+
+                        @Override
+                        public void onCancel() {
+                            //nothing
+                        }
+                    });
+                    return null;
+                });
+
+        host.getFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(0, 0, 0, R.animator.plain_300)
+                .add(android.R.id.content, txDetailFragment, FragmentFingerprint.class.getName())
+                .addToBackStack(null)
+                .commit();
+    }
 }

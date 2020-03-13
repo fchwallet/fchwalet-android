@@ -31,6 +31,7 @@ import android.widget.LinearLayout;
 
 import com.breadwallet.BuildConfig;
 import com.breadwallet.R;
+import com.breadwallet.fch.DataCache;
 import com.breadwallet.fch.KLineTask;
 import com.breadwallet.fch.SpUtil;
 import com.breadwallet.model.PriceDataPoint;
@@ -62,6 +63,7 @@ import com.breadwallet.wallet.abstracts.BaseWalletManager;
 import com.breadwallet.wallet.abstracts.SyncListener;
 import com.breadwallet.wallet.util.SyncUpdateHandler;
 import com.breadwallet.wallet.wallets.bitcoin.BaseBitcoinWalletManager;
+import com.breadwallet.wallet.wallets.bitcoin.WalletFchManager;
 import com.breadwallet.wallet.wallets.ethereum.WalletEthManager;
 import com.platform.HTTPServer;
 import com.platform.util.AppReviewPromptManager;
@@ -242,8 +244,16 @@ public class WalletActivity extends BRActivity implements InternetManager.Connec
         mViewModel.getBalanceLiveData().observe(this, balance -> {
             if (balance != null) {
                 mCurrencyPriceUsd.setText(balance.getFiatExchangeRate());
-                mBalancePrimary.setText(balance.getFiatBalance());
-                mBalanceSecondary.setText(balance.getCryptoBalance());
+//                mBalancePrimary.setText(balance.getFiatBalance());
+//                mBalanceSecondary.setText(balance.getCryptoBalance());
+
+                int tb = DataCache.getInstance().getTotalBalance();
+                BigDecimal crypto = new BigDecimal(tb).divide(WalletFchManager.ONE_FCH_BD);
+                BigDecimal fiat = crypto.multiply(new BigDecimal(SpUtil.get(this, SpUtil.KEY_PRICE)));
+                String fiatString = CurrencyUtils.getFormattedAmount(this,
+                        BRSharedPrefs.getPreferredFiatIso(this), fiat);
+                mBalancePrimary.setText(fiatString);
+                mBalanceSecondary.setText(crypto.toString());
 
                 if (Utils.isNullOrZero(balance.getExchangeRate())) {
 //                    mCurrencyPriceUsd.setVisibility(View.INVISIBLE);
