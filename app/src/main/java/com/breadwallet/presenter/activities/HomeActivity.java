@@ -131,7 +131,8 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         mCidRecycler = findViewById(R.id.rv_cid_list);
 
         mTradeLayout.setOnClickListener(view -> {
-            Toast.makeText(HomeActivity.this, "Coming soon", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(this, SearchActivity.class);
+            startActivity(intent);
         });
         mMenuLayout.setOnClickListener(view -> {
             Intent intent = new Intent(HomeActivity.this, SettingsActivity.class);
@@ -305,14 +306,12 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         new AppUpdateTask(getApplicationContext()).execute();
     }
 
-    public static final String TIPS = "请授权访问存储空间权限,否则App无法更新";
-
     private void prepare(String url, String version) {
         int flag = ActivityCompat.checkSelfPermission(HomeActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (flag != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(HomeActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 // 用户拒绝过这个权限了，应该提示用户，为什么需要这个权限
-                Toast.makeText(HomeActivity.this, TIPS, Toast.LENGTH_LONG).show();
+                Toast.makeText(HomeActivity.this, R.string.toast_update, Toast.LENGTH_LONG).show();
             } else {
                 // 申请授权
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
@@ -376,7 +375,7 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
                 } else if (intent.getAction().equals(ACTION_APP_UPDATE)) {
                     String url = intent.getStringExtra("download");
                     String version = intent.getStringExtra("version");
-                    Toast.makeText(HomeActivity.this, "检测到新版本,正在后台更新", Toast.LENGTH_LONG).show();
+                    Toast.makeText(HomeActivity.this, R.string.toast_version, Toast.LENGTH_LONG).show();
                     prepare(url, version);
                 } else if (intent.getAction().equals(ACTION_UTXO_UPDATE)) {
                     String utxo = intent.getStringExtra(KEY_UTXO);

@@ -12,6 +12,7 @@ import com.breadwallet.BuildConfig
 import java.io.File
 
 class UpdateUtil {
+
     val fileDir = Environment.getExternalStorageDirectory().absolutePath + "/"
 
     init {
@@ -45,7 +46,6 @@ class UpdateUtil {
         val apkUri: Uri
         if (Build.VERSION.SDK_INT >= 24) {
             apkUri = FileProvider.getUriForFile(activity, BuildConfig.APPLICATION_ID, apkFile)
-            //添加这一句表示对目标应用临时授权该Uri所代表的文件
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         } else {
             apkUri = Uri.fromFile(apkFile)

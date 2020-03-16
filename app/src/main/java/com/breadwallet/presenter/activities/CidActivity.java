@@ -89,9 +89,9 @@ public class CidActivity extends BRActivity {
                 if (mDataCache.getBalance().containsKey(mAddress)) {
                     int balance = mDataCache.getBalance().get(mAddress);
                     double b = balance / WalletFchManager.ONE_FCH;
-                    mTvBalance.setText("余额： " + b + " FCH");
+                    mTvBalance.setText(String.format(getString(R.string.balance_format), b));
                 } else {
-                    mTvBalance.setText("余额： 0.0 FCH");
+                    mTvBalance.setText(String.format(getString(R.string.balance_format), 0.0));
                 }
             }
 
@@ -106,11 +106,11 @@ public class CidActivity extends BRActivity {
             public void onClick(View view) {
                 Map<String, Integer> map = mDataCache.getBalance();
                 if (!map.containsKey(mAddress) || map.get(mAddress) < MIN_BALANCE) {
-                    Toast.makeText(CidActivity.this, "余额不足", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CidActivity.this, R.string.toast_balance, Toast.LENGTH_SHORT).show();
                     return;
                 }
                 if (!prepareUtxo()) {
-                    Toast.makeText(CidActivity.this, "余额不足", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CidActivity.this, R.string.toast_balance, Toast.LENGTH_SHORT).show();
                     return;
                 }
                 mName = mEtName.getText().toString();
@@ -240,11 +240,6 @@ public class CidActivity extends BRActivity {
             str = str + s4;
         }
         return str;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
     }
 
     @Override

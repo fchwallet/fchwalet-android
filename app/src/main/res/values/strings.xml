@@ -1226,4 +1226,17 @@
     <string name="HomeScreen.setting">Setting</string>
     <string name="add_cid">Add or Update CID</string>
 
+    <string name="toast_update">Please grant access to the storage space, otherwise the app cannot be updated</string>
+    <string name="toast_version">New version detected</string>
+    <string name="toast_balance">Balance not enough</string>
+
+    <string name="declare_cid">Declare CID</string>
+    <string name="choose_address">Address</string>
+    <string name="target_address">To</string>
+    <string name="amount">Amount</string>
+    <string name="nickname">Nickname</string>
+    <string name="tag">Tag</string>
+    <string name="create">Create</string>
+    <string name="balance_format">Balance:\t%f FCH</string>
+
 </resources>

@@ -1170,4 +1170,18 @@
     <string name="HomeScreen.search">搜索</string>
     <string name="HomeScreen.setting">设置</string>
     <string name="add_cid">创建或更新CID</string>
+
+    <string name="toast_update">请授权访问存储空间权限,否则App无法更新</string>
+    <string name="toast_version">检测到新版本,正在后台更新</string>
+    <string name="toast_balance">余额不足</string>
+
+    <string name="declare_cid">声明CID</string>
+    <string name="choose_address">选择地址</string>
+    <string name="target_address">目的地址</string>
+    <string name="amount">金额</string>
+    <string name="nickname">昵称</string>
+    <string name="tag">标签</string>
+    <string name="create">创建</string>
+    <string name="balance_format">余额:\t%f FCH</string>
+
 </resources>
