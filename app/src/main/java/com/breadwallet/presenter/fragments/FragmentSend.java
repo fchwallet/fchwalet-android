@@ -465,6 +465,11 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
 
                 if (allFilled) {
 
+                    if (wm.containsAddress(mAddress)) {
+                        Toast.makeText(activity, R.string.Send_containsAddress, Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
                     BRCoreTransaction tx = buildTx(req.getAddress(), cryptoAmount.intValue());
                     if (tx == null) {
                         Toast.makeText(activity, "手续费不足", Toast.LENGTH_SHORT).show();
@@ -978,7 +983,7 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
         tx.addOutput(out);
 
         mCharge = total - fee - amount;
-        if (mCharge > 99) {
+        if (mCharge > 599) {
             byte[] chargeScript = new BRCoreAddress(mAddress).getPubKeyScript();
             BRCoreTransactionOutput charge = new BRCoreTransactionOutput(mCharge, chargeScript);
             tx.addOutput(charge);
@@ -1005,7 +1010,7 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
         SpUtil.putTxid(activity, txs);
 
         Map<String, Integer> map = new HashMap<String, Integer>();
-        if (mCharge > 99) {
+        if (mCharge > 599) {
             Utxo charge = new Utxo(txid, mAddress, mCharge, 1);
             pending.add(charge);
             map.put(mAddress, mCharge);
