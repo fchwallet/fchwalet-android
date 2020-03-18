@@ -41,6 +41,7 @@ import com.breadwallet.presenter.customviews.BRButton;
 import com.breadwallet.presenter.customviews.BRNotificationBar;
 import com.breadwallet.presenter.customviews.BaseTextView;
 import com.breadwallet.presenter.entities.CryptoRequest;
+import com.breadwallet.presenter.entities.TxUiHolder;
 import com.breadwallet.presenter.fragments.FragmentSend;
 import com.breadwallet.tools.animation.BRDialog;
 import com.breadwallet.tools.animation.UiUtils;
@@ -274,6 +275,7 @@ public class WalletActivity extends BRActivity implements InternetManager.Connec
             if (newTxList != null) {
                 mAdapter.setItems(newTxList);
                 mAdapter.notifyDataSetChanged();
+                updateAddress(newTxList);
             }
         });
         mViewModel.getProgressLiveData().observe(this, progress -> {
@@ -777,6 +779,20 @@ public class WalletActivity extends BRActivity implements InternetManager.Connec
     protected void onDestroy() {
         unregisterReceiver(mReceiver);
         super.onDestroy();
+    }
+
+    private void updateAddress(List<TxUiHolder> list) {
+        List<String> addresses = new ArrayList<String>();
+        for (TxUiHolder tx : list) {
+            if (tx.isReceived() && !addresses.contains(tx.getTo())) {
+                addresses.add(tx.getTo());
+            }
+        }
+
+        DataCache dc = DataCache.getInstance();
+        if (dc.getAddressList().size() < addresses.size()) {
+            dc.setAddressList(addresses);
+        }
     }
 
 }

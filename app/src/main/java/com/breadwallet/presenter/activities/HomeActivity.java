@@ -268,6 +268,7 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         InternetManager.registerConnectionReceiver(this, this);
         onConnectionChanged(InternetManager.getInstance().isConnected(this));
 
+        updateAddress();
         getUtxo();
         refreshCid();
     }
@@ -441,6 +442,34 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
                 mAddressString += ",";
             }
         }
+        Log.e("####", "mAddressString = " + mAddressString);
+    }
+
+    private void updateAddress() {
+        String a = mWalletManager.getAddress(this);
+        List<String> newList = mDateCache.getAddressList();
+        if (!newList.contains(a)) {
+            newList.add(a);
+        }
+        if (newList.size() > mAddressList.size()) {
+            mAddressList = newList;
+            mDateCache.setAddressList(newList);
+            SpUtil.putAddress(this, mAddressList);
+
+            int size = mAddressList.size();
+            for (int i = 0; i < size; ++i) {
+                mAddressString += mAddressList.get(i);
+                if (i != size - 1) {
+                    mAddressString += ",";
+                }
+            }
+            Log.e("####", "mAddressString = " + mAddressString);
+
+            // reload CID
+            LinkedBlockingQueue<Runnable> q = new LinkedBlockingQueue<Runnable>();
+            ExecutorService e = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, q);
+            new CidTask(getApplicationContext(), mAddressString).executeOnExecutor(e);
+        }
     }
 
     private void initCid() {
@@ -540,9 +569,12 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         Log.e("####", "mTotalBalance = " + mTotalBalance);
         mDateCache.setTotalBalance(mTotalBalance);
 
-        BigDecimal bd = new BigDecimal(mTotalBalance);
-        String price = SpUtil.get(this, SpUtil.KEY_PRICE);
-        bd = bd.multiply(new BigDecimal(price)).divide(WalletFchManager.ONE_FCH_BD);
+        BigDecimal bd = BigDecimal.ZERO;
+        if (mTotalBalance > 0) {
+            bd = new BigDecimal(mTotalBalance);
+            String price = SpUtil.get(this, SpUtil.KEY_PRICE);
+            bd = bd.multiply(new BigDecimal(price)).divide(WalletFchManager.ONE_FCH_BD);
+        }
         mFiatTotal.setText(CurrencyUtils.getFormattedAmount(this,
                 BRSharedPrefs.getPreferredFiatIso(this), bd));
         mViewModel.refreshWallets();

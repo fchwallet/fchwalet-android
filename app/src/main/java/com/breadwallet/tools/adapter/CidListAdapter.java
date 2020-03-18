@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.breadwallet.R;
 import com.breadwallet.fch.Cid;
 import com.breadwallet.fch.DataCache;
+import com.breadwallet.wallet.wallets.bitcoin.WalletFchManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +78,7 @@ public class CidListAdapter extends RecyclerView.Adapter<CidListAdapter.CidViewH
             Map<String, Integer> m = DataCache.getInstance().getBalance();
             if (m.containsKey(cid.getAddress())) {
                 int balance = m.get(cid.getAddress());
-                double fch = balance / 100000000.0;
+                double fch = balance / WalletFchManager.ONE_FCH;
                 decoratedHolderView.mBalance.setText(fch + "");
             } else {
                 decoratedHolderView.mBalance.setText("0");

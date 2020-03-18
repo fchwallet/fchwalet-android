@@ -157,7 +157,7 @@ public class CidActivity extends BRActivity {
         tx.addOutput(out);
 
         mCharge = mTotal - mFee - TARGET_BALANCE;
-        if (mCharge > 599) {
+        if (mCharge > WalletFchManager.DUST) {
             BRCoreTransactionOutput charge = new BRCoreTransactionOutput(mCharge, inScript);
             tx.addOutput(charge);
         }
@@ -206,7 +206,7 @@ public class CidActivity extends BRActivity {
         mDataCache.setSpendTxid(txs);
         SpUtil.putTxid(this, txs);
 
-        if (mCharge > 599) {
+        if (mCharge > WalletFchManager.DUST) {
             Utxo charge = new Utxo(txid, mAddress, mCharge, 1);
             pending.add(charge);
         }

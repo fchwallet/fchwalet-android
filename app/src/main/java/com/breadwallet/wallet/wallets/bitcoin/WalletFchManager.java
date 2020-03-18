@@ -62,6 +62,7 @@ public final class WalletFchManager extends BaseBitcoinWalletManager {
 
     public static final double ONE_FCH = 100000000.0;
     public static final BigDecimal ONE_FCH_BD = new BigDecimal(ONE_FCH);
+    public static final int DUST = 599;
 
     private static WalletFchManager mInstance;
 

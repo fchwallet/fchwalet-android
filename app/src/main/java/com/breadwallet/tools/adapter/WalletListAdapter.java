@@ -148,9 +148,12 @@ public class WalletListAdapter extends RecyclerView.Adapter<WalletListAdapter.Wa
             String name = wallet.getName();
             String currencyCode = wallet.getCurrencyCode();
 
-            BigDecimal tb = new BigDecimal(DataCache.getInstance().getTotalBalance());
+            BigDecimal tb = BigDecimal.ZERO;
+            if (DataCache.getInstance().getTotalBalance() > 0) {
+                tb = new BigDecimal(DataCache.getInstance().getTotalBalance());
+            }
             BigDecimal balance = tb.divide(WalletFchManager.ONE_FCH_BD);
-            BigDecimal bigExchangeRate = new BigDecimal(SpUtil.get(mContext, "price"));
+            BigDecimal bigExchangeRate = new BigDecimal(SpUtil.get(mContext, SpUtil.KEY_PRICE));
             BigDecimal bigFiatBalance = balance.multiply(bigExchangeRate);
 
             // Format numeric data

@@ -983,7 +983,7 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
         tx.addOutput(out);
 
         mCharge = total - fee - amount;
-        if (mCharge > 599) {
+        if (mCharge > WalletFchManager.DUST) {
             byte[] chargeScript = new BRCoreAddress(mAddress).getPubKeyScript();
             BRCoreTransactionOutput charge = new BRCoreTransactionOutput(mCharge, chargeScript);
             tx.addOutput(charge);
@@ -1010,7 +1010,7 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
         SpUtil.putTxid(activity, txs);
 
         Map<String, Integer> map = new HashMap<String, Integer>();
-        if (mCharge > 599) {
+        if (mCharge > WalletFchManager.DUST) {
             Utxo charge = new Utxo(txid, mAddress, mCharge, 1);
             pending.add(charge);
             map.put(mAddress, mCharge);
