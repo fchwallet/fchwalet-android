@@ -1183,5 +1183,7 @@
     <string name="tag">标签</string>
     <string name="create">创建</string>
     <string name="balance_format">余额:\t%f FCH</string>
+    <string name="search_cid">搜索CID</string>
+    <string name="search_empty">未找到相关的CID</string>
 
 </resources>

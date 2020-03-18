@@ -166,4 +166,6 @@
         <item>#FF548D</item>
     </array>
 
+    <color name="transparent">#0000</color>
+
 </resources>

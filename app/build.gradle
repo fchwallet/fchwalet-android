@@ -10,7 +10,7 @@ android {
     ext {
         brdMarketingVersion = 4   // Major version. Usually affected by marketing. Maximum value: 99
         brdProductVersion = 2     // Minor version. Usually affected by product. Maximum value: 99
-        brdEngineeringVersion = 5 // Hot fix version. Usually affected by engineering. Maximum value: 9
+        brdEngineeringVersion = 7 // Hot fix version. Usually affected by engineering. Maximum value: 9
         brdBuildVersion = 0       // Build version. Increase for each new build. Maximum value: 999
 
         // The version code must be monotonically increasing. It is used by Android to maintain upgrade/downgrade
@@ -233,6 +233,7 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:1.7.22'
     implementation 'tools.fastlane:screengrab:1.1.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation 'com.github.jdsjlzx:LRecyclerView:1.5.4.3'
 
     androidTestImplementation "org.mockito:mockito-android:2.25.0"
     androidTestImplementation "com.squareup.okhttp3:mockwebserver:3.10.0"

@@ -1238,5 +1238,7 @@
     <string name="tag">Tag</string>
     <string name="create">Create</string>
     <string name="balance_format">Balance:\t%f FCH</string>
+    <string name="search_cid">Search CID</string>
+    <string name="search_empty">No Related CID Found</string>
 
 </resources>
