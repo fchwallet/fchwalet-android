@@ -304,7 +304,7 @@ public class TransactionListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         }
     }
 
-    interface OnItemClickListener {
+    public interface OnItemClickListener {
         void onItemClicked(TxUiHolder item);
     }
 }

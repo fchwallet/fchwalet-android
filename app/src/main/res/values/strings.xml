@@ -1240,5 +1240,8 @@
     <string name="balance_format">Balance:\t%f FCH</string>
     <string name="search_cid">Search CID</string>
     <string name="search_empty">No Related CID Found</string>
+    <string name="balance">Balance</string>
+    <string name="signature">Sign</string>
+    <string name="transaction_history">Transaction History</string>
 
 </resources>

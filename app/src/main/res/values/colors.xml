@@ -167,5 +167,7 @@
     </array>
 
     <color name="transparent">#0000</color>
+    <color name="detail_blue">#3682ff</color>
+    <color name="detail_button">#142d45</color>
 
 </resources>

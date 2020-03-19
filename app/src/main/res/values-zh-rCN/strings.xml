@@ -1185,5 +1185,8 @@
     <string name="balance_format">余额:\t%f FCH</string>
     <string name="search_cid">搜索CID</string>
     <string name="search_empty">未找到相关的CID</string>
+    <string name="balance">余额</string>
+    <string name="signature">签名</string>
+    <string name="transaction_history">交易记录</string>
 
 </resources>

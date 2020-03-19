@@ -185,13 +185,15 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
                 if (position >= mCidAdapter.getItemCount() || position < 0) {
                     return;
                 }
+                Intent intent = null;
                 if (mCidAdapter.getItemViewType(position) == 0) {
-
+                    intent = new Intent(HomeActivity.this, CidDetailActivity.class);
+                    intent.putExtra("cid_position", position);
                 } else {
-                    Intent intent = new Intent(HomeActivity.this, CidActivity.class);
-                    startActivity(intent);
-                    overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
+                    intent = new Intent(HomeActivity.this, CidActivity.class);
                 }
+                startActivity(intent);
+                overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
             }
 
             @Override

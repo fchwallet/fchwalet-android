@@ -78,7 +78,6 @@ public class CidActivity extends BRActivity {
 
         mWalletManager = WalletsMaster.getInstance().getCurrentWallet(this);
 
-        mDataCache = mDataCache.getInstance();
         List<String> addresses = mDataCache.getAddressList();
         mAdapter = new CidSpinnerAdapter(this, addresses);
         mSpinner.setAdapter(mAdapter);
