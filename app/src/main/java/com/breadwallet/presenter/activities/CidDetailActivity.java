@@ -50,14 +50,7 @@ public class CidDetailActivity extends BRActivity {
 
         int position = getIntent().getIntExtra("cid_position", 0);
         mCid = mDataCache.getCidList().get(position);
-
         mName.setText(mCid.getName());
-        if (mDataCache.getBalance().containsKey(mCid.getAddress())) {
-            BigDecimal b = new BigDecimal(mDataCache.getBalance().get(mCid.getAddress())).divide(WalletFchManager.ONE_FCH_BD);
-            mBalance.setText(b.toString());
-        } else {
-            mBalance.setText("0");
-        }
 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mAdapter = new TransactionListAdapter(this, null, new TransactionListAdapter.OnItemClickListener() {
@@ -67,20 +60,20 @@ public class CidDetailActivity extends BRActivity {
             }
         });
         mRecyclerView.setAdapter(mAdapter);
-        initTxHistory();
 
         mSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(CidDetailActivity.this, SendActivity.class);
-                i.putExtra("address", mCid.getAddress());
                 startActivity(i);
             }
         });
         mSign.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Intent i = new Intent(CidDetailActivity.this, SignActivity.class);
+                i.putExtra("address", mCid.getAddress());
+                startActivity(i);
             }
         });
     }
@@ -88,8 +81,7 @@ public class CidDetailActivity extends BRActivity {
     private void initTxHistory() {
         List<TxUiHolder> list = new ArrayList<TxUiHolder>();
         for (TxUiHolder tx : mWalletManager.getTxUiHolders(getApplication())) {
-            if (tx.getFrom().equalsIgnoreCase(mCid.getAddress()) ||
-                    tx.getTo().equalsIgnoreCase(mCid.getAddress())) {
+            if (tx.getTo().equalsIgnoreCase(mCid.getAddress())) {
                 list.add(tx);
             }
         }
@@ -97,4 +89,15 @@ public class CidDetailActivity extends BRActivity {
         mAdapter.notifyDataSetChanged();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mDataCache.getBalance().containsKey(mCid.getAddress())) {
+            BigDecimal b = new BigDecimal(mDataCache.getBalance().get(mCid.getAddress())).divide(WalletFchManager.ONE_FCH_BD);
+            mBalance.setText(b.toString());
+        } else {
+            mBalance.setText("0");
+        }
+        initTxHistory();
+    }
 }

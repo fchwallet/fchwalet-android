@@ -15,14 +15,16 @@ import com.breadwallet.core.BRCoreAddress;
 import com.breadwallet.core.BRCoreTransaction;
 import com.breadwallet.core.BRCoreTransactionInput;
 import com.breadwallet.core.BRCoreTransactionOutput;
-import com.breadwallet.fch.Cid;
 import com.breadwallet.fch.CidSpinnerAdapter;
 import com.breadwallet.fch.DataCache;
 import com.breadwallet.fch.SpUtil;
 import com.breadwallet.fch.Utxo;
 import com.breadwallet.presenter.activities.util.BRActivity;
+import com.breadwallet.presenter.customviews.BRDialogView;
 import com.breadwallet.presenter.entities.CryptoRequest;
+import com.breadwallet.tools.animation.BRDialog;
 import com.breadwallet.tools.animation.UiUtils;
+import com.breadwallet.tools.manager.BRClipboardManager;
 import com.breadwallet.tools.manager.SendManager;
 import com.breadwallet.tools.threads.executor.BRExecutor;
 import com.breadwallet.tools.util.Utils;
@@ -36,48 +38,36 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CidActivity extends BRActivity {
-
-    private final static String TARGET = "F9A9TgNE2ixYhQmEnB15BNYcEuCvZvzqxT";
-    private final static String PRE_DATA = "FEIP|3|1|";
-    private final static int MIN_BALANCE = 1010000;
-    private final static int TARGET_BALANCE = 1000000;
+public class SendActivity extends BRActivity {
 
     private BaseWalletManager mWalletManager;
     private DataCache mDataCache;
 
     private Spinner mSpinner;
-    private CidSpinnerAdapter mAdapter;
-    private TextView mTvTarget;
     private TextView mTvBalance;
-    private EditText mEtName;
-    private EditText mEtTag;
-    private TextView mBtnCreate;
+    private TextView mTvPaste;
+    private TextView mSend;
+    private EditText mEtAddress;
+    private EditText mEtAmount;
 
+    private CidSpinnerAdapter mAdapter;
+    private String mAddress, mTarget;
+    private int mTotal, mFee, mCharge;
     private List<Utxo> mUtxos = new ArrayList<Utxo>();
-    private String mAddress;
-    private String mName = "";
-    private String mTag = "";
-    private int mTotal;
-    private int mFee;
-    private int mCharge;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cid);
-
-        mSpinner = findViewById(R.id.spinner);
-        mTvTarget = findViewById(R.id.tv_target_address);
-        mTvBalance = findViewById(R.id.tv_balance);
-        mBtnCreate = findViewById(R.id.tv_create);
-        mEtName = findViewById(R.id.et_name);
-        mEtTag = findViewById(R.id.et_tag);
-
-        mTvTarget.setText(TARGET);
+        setContentView(R.layout.activity_send);
+        mSpinner = findViewById(R.id.send_spinner);
+        mTvBalance = findViewById(R.id.send_balance);
+        mTvPaste = findViewById(R.id.send_paste);
+        mSend = findViewById(R.id.send_send);
+        mEtAddress = findViewById(R.id.send_address);
+        mEtAmount = findViewById(R.id.send_amount);
 
         mWalletManager = WalletsMaster.getInstance().getCurrentWallet(this);
-        mDataCache = DataCache.getInstance();
+        mDataCache = mDataCache.getInstance();
 
         List<String> addresses = mDataCache.getAddressList();
         mAdapter = new CidSpinnerAdapter(this, addresses);
@@ -101,31 +91,47 @@ public class CidActivity extends BRActivity {
             }
         });
 
-        mBtnCreate.setOnClickListener(new View.OnClickListener() {
+        mTvPaste.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Map<String, Integer> map = mDataCache.getBalance();
-                if (!map.containsKey(mAddress) || map.get(mAddress) < MIN_BALANCE) {
-                    Toast.makeText(CidActivity.this, R.string.toast_balance, Toast.LENGTH_SHORT).show();
+                mTarget = BRClipboardManager.getClipboard(SendActivity.this);
+                mEtAddress.setText(mTarget);
+            }
+        });
+
+        mSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mTarget = mEtAddress.getText().toString();
+                String amount = mEtAmount.getText().toString();
+                if (mTarget.isEmpty() || amount.isEmpty()) {
                     return;
                 }
-                if (!prepareUtxo()) {
-                    Toast.makeText(CidActivity.this, R.string.toast_balance, Toast.LENGTH_SHORT).show();
-                    return;
+
+                if (mWalletManager.isAddressValid(mTarget)) {
+                    if (mWalletManager.containsAddress(mTarget)) {
+                        Toast.makeText(SendActivity.this, R.string.Send_containsAddress, Toast.LENGTH_LONG).show();
+                    } else {
+                        BigDecimal bd = new BigDecimal(amount).multiply(WalletFchManager.ONE_FCH_BD);
+                        buildTx(bd.intValue());
+                    }
+                } else {
+                    BRDialog.showCustomDialog(SendActivity.this, "", getResources().getString(R.string.Send_invalidAddressTitle),
+                            getString(R.string.AccessibilityLabels_close), null, new BRDialogView.BROnClickListener() {
+                                @Override
+                                public void onClick(BRDialogView brDialogView) {
+                                    brDialogView.dismiss();
+                                }
+                            }, null, null, 0);
                 }
-                mName = mEtName.getText().toString();
-                mTag = mEtTag.getText().toString();
-                String data = PRE_DATA + mName + "|" + mTag;
-                Log.e("####", "data = " + data);
-                createCid(data);
             }
         });
     }
 
-    private boolean prepareUtxo() {
+    private boolean prepareUtxo(int amount) {
         List<Utxo> list = mDataCache.getUtxoList();
         mTotal = 0;
-        mFee = 1000;
+        mFee = 500;
         mUtxos.clear();
         for (Utxo u : list) {
             if (u.getAddress().equalsIgnoreCase(mAddress)) {
@@ -134,10 +140,23 @@ public class CidActivity extends BRActivity {
                 mUtxos.add(u);
             }
         }
-        return mTotal >= (mFee + TARGET_BALANCE);
+        return mTotal >= (mFee + amount);
     }
 
-    private void createCid(String data) {
+    private void buildTx(int amount) {
+        Map<String, Integer> map = mDataCache.getBalance();
+        if (!map.containsKey(mAddress) || map.get(mAddress) < amount) {
+            Toast.makeText(SendActivity.this, R.string.toast_balance, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (!prepareUtxo(amount)) {
+            Toast.makeText(SendActivity.this, R.string.toast_balance, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        createCid(amount);
+    }
+
+    private void createCid(int amount) {
         BRCoreTransaction tx = new BRCoreTransaction();
         byte[] empty = new byte[]{};
         long sequence = 4294967295L;
@@ -151,29 +170,19 @@ public class CidActivity extends BRActivity {
             tx.addInput(in);
         }
 
-        BRCoreAddress targetAddress = new BRCoreAddress(TARGET);
+        BRCoreAddress targetAddress = new BRCoreAddress(mTarget);
         byte[] targetScript = targetAddress.getPubKeyScript();
-        BRCoreTransactionOutput out = new BRCoreTransactionOutput(TARGET_BALANCE, targetScript);
+        BRCoreTransactionOutput out = new BRCoreTransactionOutput(amount, targetScript);
         tx.addOutput(out);
 
-        mCharge = mTotal - mFee - TARGET_BALANCE;
+        mCharge = mTotal - mFee - amount;
         if (mCharge > WalletFchManager.DUST) {
             BRCoreTransactionOutput charge = new BRCoreTransactionOutput(mCharge, inScript);
             tx.addOutput(charge);
         }
 
-        String hexData = stringToHex(data);
-        int len = hexData.length() / 2;
-        if (len < 16) {
-            hexData = "6a0" + Integer.toHexString(len) + hexData;
-        } else {
-            hexData = "6a" + Integer.toHexString(len) + hexData;
-        }
-        BRCoreTransactionOutput dataOut = new BRCoreTransactionOutput(0, Utils.hexToBytes(hexData));
-        tx.addOutput(dataOut);
-
         CryptoTransaction transaction = new CryptoTransaction(tx);
-        final CryptoRequest item = new CryptoRequest.Builder().setAddress(TARGET).setAmount(new BigDecimal(TARGET_BALANCE)).build();
+        final CryptoRequest item = new CryptoRequest.Builder().setAddress(mTarget).setAmount(new BigDecimal(amount)).build();
         BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(() -> {
             SendManager.sendTransaction2(this, item, transaction, mWalletManager, (txHash, succeeded) -> {
                 if (!Utils.isNullOrEmpty(txHash) && succeeded) {
@@ -181,7 +190,6 @@ public class CidActivity extends BRActivity {
                             getString(R.string.Alerts_sendSuccessSubheader), R.drawable.ic_check_mark_white, () -> UiUtils.killAllFragments(this));
                     Log.e("####", "txHash = " + txHash);
                     updateUtxo(txHash);
-                    finish();
                 } else {
                     UiUtils.showBreadSignal(this, getString(R.string.Alert_error),
                             getString(R.string.Alerts_sendFailure), R.drawable.ic_error_outline_black_24dp, () -> UiUtils.killAllFragments(this));
@@ -194,6 +202,9 @@ public class CidActivity extends BRActivity {
     private void updateUtxo(String txid) {
         List<String> txs = mDataCache.getSpendTxid();
         List<Utxo> pending = mDataCache.getPendingList();
+        List<Utxo> utxos = mDataCache.getUtxoList();
+        Map<String, Integer> map = mDataCache.getBalance();
+        int balance = mDataCache.getTotalBalance();
 
         for (Utxo u : mUtxos) {
             String s = u.getTxid() + u.getVout();
@@ -202,50 +213,33 @@ public class CidActivity extends BRActivity {
             if (pending.contains(u)) {
                 pending.remove(u);
             }
+
+            if (utxos.contains(u)) {
+                utxos.remove(u);
+            }
         }
         mDataCache.setSpendTxid(txs);
         SpUtil.putTxid(this, txs);
 
+        balance -= mTotal;
         if (mCharge > WalletFchManager.DUST) {
             Utxo charge = new Utxo(txid, mAddress, mCharge, 1);
             pending.add(charge);
+            map.put(mAddress, mCharge);
+            balance += mCharge;
+            utxos.add(charge);
+            BigDecimal bd = new BigDecimal(mCharge).divide(WalletFchManager.ONE_FCH_BD);
+            mTvBalance.setText(String.format(getString(R.string.balance_format), bd.doubleValue()));
+        } else {
+            map.put(mAddress, 0);
+            mTvBalance.setText(String.format(getString(R.string.balance_format), 0));
         }
         mDataCache.setPendingList(pending);
         SpUtil.putPending(this, pending);
 
-        saveCid();
-    }
-
-    private void saveCid() {
-        String name = mName + "_" + mAddress.substring(30);
-        List<Cid> list = mDataCache.getCidList();
-
-        Cid cid = new Cid(mAddress, name);
-        for (Cid c : list) {
-            if (c.getAddress().equalsIgnoreCase(mAddress)) {
-                list.remove(c);
-                break;
-            }
-        }
-        list.add(cid);
-        mDataCache.setCidList(list);
-        SpUtil.putCid(this, list);
-    }
-
-    public String stringToHex(String s) {
-        String str = "";
-        for (int i = 0; i < s.length(); i++) {
-            int ch = s.charAt(i);
-            String s4 = Integer.toHexString(ch);
-            str = str + s4;
-        }
-        return str;
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        overridePendingTransition(R.anim.enter_from_left, R.anim.exit_to_right);
+        mDataCache.setBalance(map);
+        mDataCache.setTotalBalance(balance);
+        mDataCache.setUtxoList(utxos);
     }
 
 }

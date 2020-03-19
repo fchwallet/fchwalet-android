@@ -1228,7 +1228,7 @@
 
     <string name="toast_update">Please grant access to the storage space, otherwise the app cannot be updated</string>
     <string name="toast_version">New version detected</string>
-    <string name="toast_balance">Balance not enough</string>
+    <string name="toast_balance">Insufficient Balance</string>
 
     <string name="declare_cid">Declare CID</string>
     <string name="choose_address">Address</string>
@@ -1243,5 +1243,6 @@
     <string name="balance">Balance</string>
     <string name="signature">Sign</string>
     <string name="transaction_history">Transaction History</string>
+    <string name="sign_message">Message</string>
 
 </resources>

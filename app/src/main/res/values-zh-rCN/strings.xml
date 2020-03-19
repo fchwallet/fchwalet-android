@@ -1188,5 +1188,6 @@
     <string name="balance">余额</string>
     <string name="signature">签名</string>
     <string name="transaction_history">交易记录</string>
+    <string name="sign_message">待签名消息</string>
 
 </resources>
