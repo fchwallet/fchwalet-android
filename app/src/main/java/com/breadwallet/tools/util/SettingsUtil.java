@@ -18,48 +18,35 @@ import androidx.work.WorkManager;
 import com.breadwallet.BreadApp;
 import com.breadwallet.BuildConfig;
 import com.breadwallet.R;
-import com.breadwallet.model.Experiment;
-import com.breadwallet.model.Experiments;
 import com.breadwallet.platform.pricealert.PriceAlertWorker;
 import com.breadwallet.presenter.activities.InputPinActivity;
 import com.breadwallet.presenter.activities.ManageWalletsActivity;
+import com.breadwallet.presenter.activities.MonitorAddressActivity;
+import com.breadwallet.presenter.activities.SignActivity;
 import com.breadwallet.presenter.activities.intro.OnBoardingActivity;
 import com.breadwallet.presenter.activities.intro.WriteDownActivity;
-import com.breadwallet.presenter.activities.settings.AboutActivity;
 import com.breadwallet.presenter.activities.settings.DisplayCurrencyActivity;
 import com.breadwallet.presenter.activities.settings.FingerprintActivity;
 import com.breadwallet.presenter.activities.settings.ImportActivity;
 import com.breadwallet.presenter.activities.settings.NodesActivity;
 import com.breadwallet.presenter.activities.settings.SegWitActivity;
 import com.breadwallet.presenter.activities.settings.SettingsActivity;
-import com.breadwallet.presenter.activities.settings.ShareDataActivity;
 import com.breadwallet.presenter.activities.settings.SpendLimitActivity;
 import com.breadwallet.presenter.activities.settings.SyncBlockchainActivity;
 import com.breadwallet.presenter.activities.settings.UnlinkActivity;
 import com.breadwallet.presenter.customviews.BRToast;
 import com.breadwallet.presenter.entities.BRSettingsItem;
 import com.breadwallet.presenter.interfaces.BRAuthCompletion;
-import com.breadwallet.repository.ExperimentsRepositoryImpl;
 import com.breadwallet.tools.animation.UiUtils;
 import com.breadwallet.tools.manager.BRSharedPrefs;
 import com.breadwallet.tools.security.AuthManager;
-import com.breadwallet.tools.threads.executor.BRExecutor;
 import com.breadwallet.ui.settings.NotificationsSettingsActivity;
 import com.breadwallet.ui.pricealert.PriceAlertListActivity;
 import com.breadwallet.wallet.WalletsMaster;
 import com.breadwallet.wallet.abstracts.BaseWalletManager;
-import com.breadwallet.wallet.wallets.bitcoin.WalletBchManager;
-import com.breadwallet.wallet.wallets.bitcoin.WalletBitcoinManager;
-import com.platform.APIClient;
-import com.platform.HTTPServer;
-import com.platform.RequestBuilderKt;
-import com.platform.middlewares.plugins.LinkPlugin;
-import com.platform.util.AppReviewPromptManager;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import okhttp3.Request;
 
 /**
  * BreadWallet
@@ -133,40 +120,16 @@ public final class SettingsUtil {
             activity.overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
         }, false, R.drawable.ic_security_settings));
 
-//        settingsItems.add(new BRSettingsItem(activity.getString(R.string.MenuButton_support), "", view -> {
-//            UiUtils.showSupportFragment((FragmentActivity) activity, null, walletManager);
-//        }, false, R.drawable.ic_support));
+        settingsItems.add(new BRSettingsItem(activity.getString(R.string.signature), "", view -> {
+            Intent intent = new Intent(activity, SignActivity.class);
+            activity.startActivity(intent);
+        }, false, R.drawable.ic_support));
 
-//        settingsItems.add(new BRSettingsItem(activity.getString(R.string.Settings_review), "", new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                AppReviewPromptManager.INSTANCE.openGooglePlay(activity);
-//            }
-//        }, false, R.drawable.ic_review));
-//        settingsItems.add(new BRSettingsItem(activity.getString(R.string.Settings_rewards), "", new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                UiUtils.openRewardsWebView(activity);
-//            }
-//        }, false, R.drawable.ic_reward));
-//        settingsItems.add(new BRSettingsItem(activity.getString(R.string.About_title), "", new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Intent intent = new Intent(activity, AboutActivity.class);
-//                activity.startActivity(intent);
-//                activity.overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
-//            }
-//        }, false, R.drawable.ic_about));
-//        Experiment mapExperiment = ExperimentsRepositoryImpl.INSTANCE.getExperiments().get(Experiments.ATM_MAP.getKey());
-//        if (mapExperiment != null && mapExperiment.getActive()) {
-//            settingsItems.add(new BRSettingsItem(activity.getString(R.string.Settings_atmMapMenuItemTitle), "", view -> {
-//                BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(() -> {
-//                    String url = HTTPServer.getPlatformUrl(LinkPlugin.BROWSER_PATH);
-//                    Request request = RequestBuilderKt.buildSignedRequest(url, mapExperiment.getMeta().replace("\\/", "/"), "POST", LinkPlugin.BROWSER_PATH);
-//                    APIClient.getInstance(activity).sendRequest(request, false);
-//                });
-//            }, false, R.drawable.ic_atm_finder, activity.getString(R.string.Settings_atmMapMenuItemSubtitle)));
-//        }
+        settingsItems.add(new BRSettingsItem(activity.getString(R.string.monitor_address), "", view -> {
+            Intent intent = new Intent(activity, MonitorAddressActivity.class);
+            activity.startActivity(intent);
+        }, false, R.drawable.ic_reward));
+
         if (BuildConfig.DEBUG) {
             settingsItems.add(new BRSettingsItem(DEVELOPER_OPTIONS_TITLE, "", new View.OnClickListener() {
                 @Override
@@ -268,8 +231,8 @@ public final class SettingsUtil {
 
     public static List<BRSettingsItem> getDeveloperOptionsSettings(final Activity activity) {
         List<BRSettingsItem> items = new ArrayList<>();
-        items.add(new BRSettingsItem(SEND_LOGS, "", view -> LogsUtils.shareLogs(activity),false, 0));
-        items.add(new BRSettingsItem(API_SERVER, "", view -> showInputDialog(activity),false, 0));
+        items.add(new BRSettingsItem(SEND_LOGS, "", view -> LogsUtils.shareLogs(activity), false, 0));
+        items.add(new BRSettingsItem(API_SERVER, "", view -> showInputDialog(activity), false, 0));
         items.add(new BRSettingsItem(ONBOARDING_FLOW, "", view -> {
             Intent intent = new Intent(activity, OnBoardingActivity.class);
             activity.startActivity(intent);
@@ -449,31 +412,31 @@ public final class SettingsUtil {
     /**
      * Displays an Alert Dialog with an input text field for entering a Bundle setting.
      *
-     * @param activity The activity context.
-     * @param bundleType The type of bundle (whether WEB or TOKEN).
+     * @param activity      The activity context.
+     * @param bundleType    The type of bundle (whether WEB or TOKEN).
      * @param defaultBundle The default bundle name that will initially appear in the input text field.
      */
     private static void showBundleTextDialog(final Activity activity, final ServerBundlesHelper.Type bundleType, final String defaultBundle) {
         final EditText bundleEditText = new EditText(activity);
         bundleEditText.setText(defaultBundle, TextView.BufferType.EDITABLE);
         AlertDialog bundleDialog = new AlertDialog.Builder(activity)
-            .setMessage(BUNDLE_PROMPT)
-            .setView(bundleEditText)
-            .setPositiveButton(APPLY, (DialogInterface dialogInterface, int which) -> {
-                String bundleName = String.valueOf(bundleEditText.getText());
-                Toast.makeText(activity, BUNDLE_SET + bundleName, Toast.LENGTH_LONG).show();
-                ServerBundlesHelper.setDebugBundle(activity.getApplicationContext(), bundleType, bundleName);
-                activity.recreate();
-            })
-            .setNegativeButton(CANCEL, null)
-            .create();
+                .setMessage(BUNDLE_PROMPT)
+                .setView(bundleEditText)
+                .setPositiveButton(APPLY, (DialogInterface dialogInterface, int which) -> {
+                    String bundleName = String.valueOf(bundleEditText.getText());
+                    Toast.makeText(activity, BUNDLE_SET + bundleName, Toast.LENGTH_LONG).show();
+                    ServerBundlesHelper.setDebugBundle(activity.getApplicationContext(), bundleType, bundleName);
+                    activity.recreate();
+                })
+                .setNegativeButton(CANCEL, null)
+                .create();
         bundleDialog.show();
     }
 
     /**
      * Displays an Alert Dialog with an input text field for entering a Platform Web URL.
      *
-     * @param activity The activity context.
+     * @param activity              The activity context.
      * @param defaultWebPlatformURL The default URL that will initially appear in the input text field.
      */
     private static void showWebPlatformDebugURLTextDialog(final Activity activity, String defaultWebPlatformURL) {

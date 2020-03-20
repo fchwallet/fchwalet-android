@@ -8,25 +8,17 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.breadwallet.R;
 import com.breadwallet.fch.BalanceTask;
 import com.breadwallet.fch.Cid;
 import com.breadwallet.fch.SearchCidTask;
-import com.breadwallet.fch.SpUtil;
-import com.breadwallet.fch.Utxo;
-import com.breadwallet.fch.UtxoTask;
 import com.breadwallet.presenter.activities.util.BRActivity;
 import com.breadwallet.tools.adapter.CidSearchAdapter;
-import com.breadwallet.tools.listeners.RecyclerItemClickListener;
-import com.breadwallet.wallet.wallets.bitcoin.WalletFchManager;
 import com.github.jdsjlzx.interfaces.OnLoadMoreListener;
 import com.github.jdsjlzx.recyclerview.LuRecyclerView;
 import com.github.jdsjlzx.recyclerview.LuRecyclerViewAdapter;
@@ -196,5 +188,11 @@ public class SearchActivity extends BRActivity {
 
         }
         mCidSearchAdapter.setBalance(map);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mReceiver);
     }
 }

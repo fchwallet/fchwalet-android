@@ -242,10 +242,4 @@ public class CidActivity extends BRActivity {
         return str;
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        overridePendingTransition(R.anim.enter_from_left, R.anim.exit_to_right);
-    }
-
 }

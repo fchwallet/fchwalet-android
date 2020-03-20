@@ -17,6 +17,7 @@ public class SpUtil {
     private final static String KEY_CID = "cid_list";
     private final static String KEY_TXID = "txid_list";
     private final static String KEY_PENDING = "pending_list";
+    private final static String KEY_MONITOR = "monitor_list";
 
     public static void put(Context context, String price, String change) {
         SharedPreferences sp = context.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE);
@@ -168,4 +169,31 @@ public class SpUtil {
         return list;
     }
 
+    public static void putMonitorAddress(Context context, List<String> list) {
+        SharedPreferences sp = context.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        String value = "";
+        for (int i = 0; i < list.size(); ++i) {
+            value += list.get(i);
+            if (i < list.size() - 1) {
+                value += ",";
+            }
+        }
+        editor.putString(KEY_MONITOR, value);
+        editor.apply();
+    }
+
+    public static List<String> getMonitorAddress(Context context) {
+        List<String> list = new ArrayList<String>();
+        SharedPreferences preferences = context.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE);
+        if (preferences.contains(KEY_MONITOR)) {
+            String value = preferences.getString(KEY_MONITOR, "");
+            if (value.length() > 10) {
+                for (String s : value.split(",")) {
+                    list.add(s);
+                }
+            }
+        }
+        return list;
+    }
 }

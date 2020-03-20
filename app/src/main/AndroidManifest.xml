@@ -366,6 +366,11 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity
+            android:name=".presenter.activities.MonitorAddressActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <service
             android:name=".protocols.messageexchange.MessageExchangeService"
             android:enabled="true"

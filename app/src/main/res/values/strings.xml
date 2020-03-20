@@ -1244,5 +1244,7 @@
     <string name="signature">Sign</string>
     <string name="transaction_history">Transaction History</string>
     <string name="sign_message">Message</string>
+    <string name="monitor_address">Monitor Address</string>
+    <string name="own_address">Your Wallet Address</string>
 
 </resources>
