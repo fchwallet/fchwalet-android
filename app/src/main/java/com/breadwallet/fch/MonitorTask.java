@@ -21,7 +21,7 @@ import java.net.URL;
 public class MonitorTask extends AsyncTask<String, Integer, String> {
 
     public static final String TAG = "MonitorTask";
-    public static final String PREURL = "http://47.244.146.150:8422/api/utxo/findUtxoByAddress?address=";
+    public static final String PREURL = "http://47.244.146.150:8422/api/utxo/getTotal?address=";
 
     private Context mContext;
     private String mUrl;

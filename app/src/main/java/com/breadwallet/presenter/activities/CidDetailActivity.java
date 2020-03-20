@@ -13,6 +13,7 @@ import com.breadwallet.fch.Cid;
 import com.breadwallet.fch.DataCache;
 import com.breadwallet.presenter.activities.util.BRActivity;
 import com.breadwallet.presenter.entities.TxUiHolder;
+import com.breadwallet.tools.animation.UiUtils;
 import com.breadwallet.ui.wallet.TransactionListAdapter;
 import com.breadwallet.wallet.WalletsMaster;
 import com.breadwallet.wallet.abstracts.BaseWalletManager;
@@ -30,8 +31,7 @@ public class CidDetailActivity extends BRActivity {
 
     private TextView mName;
     private TextView mBalance;
-    private TextView mSend;
-    private TextView mSign;
+    private TextView mSend, mReceive, mSign;
     private RecyclerView mRecyclerView;
     private TransactionListAdapter mAdapter;
 
@@ -42,6 +42,7 @@ public class CidDetailActivity extends BRActivity {
         mName = findViewById(R.id.detail_cid);
         mBalance = findViewById(R.id.detail_balance);
         mSend = findViewById(R.id.detail_send);
+        mReceive = findViewById(R.id.detail_receive);
         mSign = findViewById(R.id.detail_sign);
         mRecyclerView = findViewById(R.id.rv_history);
 
@@ -66,6 +67,12 @@ public class CidDetailActivity extends BRActivity {
             public void onClick(View view) {
                 Intent i = new Intent(CidDetailActivity.this, SendActivity.class);
                 startActivity(i);
+            }
+        });
+        mReceive.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                UiUtils.showCidReceiveFragment(CidDetailActivity.this, mCid.getAddress());
             }
         });
         mSign.setOnClickListener(new View.OnClickListener() {

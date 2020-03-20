@@ -27,6 +27,7 @@ import com.breadwallet.app.util.UserMetricsUtil;
 import com.breadwallet.presenter.activities.DisabledActivity;
 import com.breadwallet.presenter.activities.HomeActivity;
 import com.breadwallet.presenter.activities.LoginActivity;
+import com.breadwallet.presenter.fragments.FragmentCidReceive;
 import com.breadwallet.ui.browser.PlatformBrowserActivity;
 import com.breadwallet.ui.wallet.WalletActivity;
 import com.breadwallet.presenter.activities.camera.ScanQRActivity;
@@ -278,6 +279,25 @@ public class UiUtils {
                 .add(android.R.id.content, fragmentReceive, FragmentReceive.class.getName())
                 .addToBackStack(FragmentReceive.class.getName()).commit();
 
+    }
+
+    public static void showCidReceiveFragment(FragmentActivity app, String address) {
+        if (app == null) {
+            Log.e(TAG, "showReceiveFragment: app is null");
+            return;
+        }
+        FragmentCidReceive fragment = (FragmentCidReceive) app.getSupportFragmentManager().findFragmentByTag(FragmentCidReceive.class.getName());
+        if (fragment != null && fragment.isAdded())
+            return;
+        fragment = new FragmentCidReceive();
+        Bundle args = new Bundle();
+        args.putString(FragmentCidReceive.EXTRA_RECEIVE, address);
+        fragment.setArguments(args);
+
+        app.getSupportFragmentManager().beginTransaction()
+                .setCustomAnimations(0, 0, 0, R.animator.plain_300)
+                .add(android.R.id.content, fragment, FragmentReceive.class.getName())
+                .addToBackStack(FragmentReceive.class.getName()).commit();
     }
 
     public static void showLegacyAddressFragment(final FragmentActivity fragmentActivity) {

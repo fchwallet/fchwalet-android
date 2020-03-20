@@ -52,7 +52,7 @@ public class MonitorAddressAdapter extends RecyclerView.Adapter<MonitorAddressAd
     public void onBindViewHolder(CidViewHolder holderView, int position) {
         DecoratedCidItemViewHolder decoratedHolderView = (DecoratedCidItemViewHolder) holderView;
         String address = mList.get(position);
-        decoratedHolderView.mName.setText(address.substring(0, 4) + "..." + address.substring(18));
+        decoratedHolderView.mName.setText(address.substring(0, 4) + "..." + address.substring(20));
         if (mBalance.containsKey(address)) {
             BigDecimal balance = mBalance.get(address);
             decoratedHolderView.mBalance.setText(balance + "");
