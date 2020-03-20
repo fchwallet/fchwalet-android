@@ -143,4 +143,9 @@ public abstract class BaseEthereumWalletManager implements BaseWalletManager {
     public String getUtxo() {
         return null;
     }
+
+    @Override
+    public byte[] signMessage(byte[] script, byte[] phrase, byte[] data) {
+        return new byte[]{};
+    }
 }

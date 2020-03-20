@@ -1050,4 +1050,9 @@ public abstract class BaseBitcoinWalletManager extends BRCoreWalletManager imple
     public String getUtxo() {
         return getWallet().getUtxo();
     }
+
+    @Override
+    public byte[] signMessage(byte[] script, byte[] phrase, byte[] data) {
+        return getWallet().signMessage(script, phrase, data);
+    }
 }

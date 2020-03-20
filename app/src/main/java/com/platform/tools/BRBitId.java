@@ -353,7 +353,7 @@ public class BRBitId {
         return nonce;
     }
 
-    private static String signMessage(String message, BRCoreKey key) {
+    public static String signMessage(String message, BRCoreKey key) {
         byte[] signingData = formatMessageForBitcoinSigning(message);
 
         MessageDigest digest;
@@ -368,6 +368,21 @@ public class BRBitId {
         byte[] signature = key.compactSign(sha256Second);
 
         return Base64.encodeToString(signature, Base64.NO_WRAP);
+    }
+
+    public static byte[] getMessageHash(String message) {
+        byte[] signingData = formatMessageForBitcoinSigning(message);
+
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance(SHA_256);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+        byte[] sha256First = digest.digest(signingData);
+        byte[] sha256Second = digest.digest(sha256First);
+        return sha256Second;
     }
 
     private static byte[] formatMessageForBitcoinSigning(String message) {

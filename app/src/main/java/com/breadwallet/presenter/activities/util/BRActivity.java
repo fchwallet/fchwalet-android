@@ -136,6 +136,8 @@ public abstract class BRActivity extends FragmentActivity {
                     });
                 }
                 break;
+            case BRConstants.SIGN_CODE:
+                break;
             case BRConstants.REQUEST_PHRASE_BITID:
                 if (resultCode == RESULT_OK) {
                     BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(new Runnable() {

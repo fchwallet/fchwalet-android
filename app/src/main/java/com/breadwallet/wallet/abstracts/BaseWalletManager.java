@@ -265,4 +265,6 @@ public interface BaseWalletManager {
     BigDecimal getSmallestCryptoForFiat(Context app, BigDecimal amount);
 
     String getUtxo();
+
+    byte[] signMessage(byte[] script, byte[] phrase, byte[] data);
 }
