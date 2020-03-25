@@ -18,10 +18,14 @@ import androidx.work.WorkManager;
 import com.breadwallet.BreadApp;
 import com.breadwallet.BuildConfig;
 import com.breadwallet.R;
+import com.breadwallet.fch.Cid;
+import com.breadwallet.fch.SpUtil;
+import com.breadwallet.fch.Utxo;
 import com.breadwallet.platform.pricealert.PriceAlertWorker;
 import com.breadwallet.presenter.activities.InputPinActivity;
 import com.breadwallet.presenter.activities.ManageWalletsActivity;
 import com.breadwallet.presenter.activities.MonitorAddressActivity;
+import com.breadwallet.presenter.activities.SendActivity;
 import com.breadwallet.presenter.activities.SignActivity;
 import com.breadwallet.presenter.activities.intro.OnBoardingActivity;
 import com.breadwallet.presenter.activities.intro.WriteDownActivity;
@@ -34,9 +38,11 @@ import com.breadwallet.presenter.activities.settings.SettingsActivity;
 import com.breadwallet.presenter.activities.settings.SpendLimitActivity;
 import com.breadwallet.presenter.activities.settings.SyncBlockchainActivity;
 import com.breadwallet.presenter.activities.settings.UnlinkActivity;
+import com.breadwallet.presenter.customviews.BRDialogView;
 import com.breadwallet.presenter.customviews.BRToast;
 import com.breadwallet.presenter.entities.BRSettingsItem;
 import com.breadwallet.presenter.interfaces.BRAuthCompletion;
+import com.breadwallet.tools.animation.BRDialog;
 import com.breadwallet.tools.animation.UiUtils;
 import com.breadwallet.tools.manager.BRSharedPrefs;
 import com.breadwallet.tools.security.AuthManager;
@@ -129,6 +135,10 @@ public final class SettingsUtil {
             Intent intent = new Intent(activity, MonitorAddressActivity.class);
             activity.startActivity(intent);
         }, false, R.drawable.ic_reward));
+
+        settingsItems.add(new BRSettingsItem(activity.getString(R.string.clear_cache), "", view -> {
+            clear(activity);
+        }, false, R.drawable.ic_about));
 
         if (BuildConfig.DEBUG) {
             settingsItems.add(new BRSettingsItem(DEVELOPER_OPTIONS_TITLE, "", new View.OnClickListener() {
@@ -456,4 +466,17 @@ public final class SettingsUtil {
         urlDialog.show();
     }
 
+    private static void clear(Activity activity) {
+        SpUtil.putPending(activity, new ArrayList<Utxo>());
+        SpUtil.putTxid(activity, new ArrayList<String>());
+        SpUtil.putAddress(activity, new ArrayList<String>());
+        SpUtil.putCid(activity, new ArrayList<Cid>());
+        BRDialog.showCustomDialog(activity, "", activity.getString(R.string.clear_complete),
+                activity.getString(R.string.AccessibilityLabels_close), null, new BRDialogView.BROnClickListener() {
+                    @Override
+                    public void onClick(BRDialogView brDialogView) {
+                        brDialogView.dismiss();
+                    }
+                }, null, null, 0);
+    }
 }

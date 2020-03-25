@@ -101,7 +101,7 @@ public class MonitorAddressActivity extends BRActivity {
         mBtnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String address = mEtAddress.getText().toString();
+                String address = mEtAddress.getText().toString().trim();
                 if (mWalletManager.isAddressValid(address)) {
                     if (mWalletManager.containsAddress(address)) {
                         BRDialog.showCustomDialog(MonitorAddressActivity.this, "", getResources().getString(R.string.own_address),
@@ -112,6 +112,11 @@ public class MonitorAddressActivity extends BRActivity {
                                     }
                                 }, null, null, 0);
                     } else {
+                        if (mAddressList.contains(address)) {
+                            showEditView(false);
+                            return;
+                        }
+
                         if (mAddressString.isEmpty()) {
                             mAddressString += address;
                         } else {
@@ -119,6 +124,7 @@ public class MonitorAddressActivity extends BRActivity {
                             mAddressString += address;
                         }
                         mAddressList.add(address);
+
                         mAdapter.setData(mAddressList);
                         SpUtil.putMonitorAddress(MonitorAddressActivity.this, mAddressList);
                         showEditView(false);
@@ -161,7 +167,6 @@ public class MonitorAddressActivity extends BRActivity {
                 JSONObject obj = new JSONObject(arr.get(i).toString());
                 String address = obj.getString("address");
                 String amount = obj.getString("amount");
-
                 BigDecimal value = new BigDecimal(amount);
                 if (map.containsKey(address)) {
                     value = value.add(map.get(address));
@@ -181,6 +186,7 @@ public class MonitorAddressActivity extends BRActivity {
         } else {
             mEditLayout.setVisibility(View.GONE);
             mRecycler.setVisibility(View.VISIBLE);
+            mEtAddress.setText("");
         }
     }
 

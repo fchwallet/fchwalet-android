@@ -227,9 +227,14 @@ public class CidActivity extends BRActivity {
                 break;
             }
         }
-        list.add(cid);
-        mDataCache.setCidList(list);
-        SpUtil.putCid(this, list);
+
+        if (mName.isEmpty() && mTag.isEmpty()) {
+
+        } else {
+            list.add(cid);
+            mDataCache.setCidList(list);
+            SpUtil.putCid(this, list);
+        }
     }
 
     public String stringToHex(String s) {

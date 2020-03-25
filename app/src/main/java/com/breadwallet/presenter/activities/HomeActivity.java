@@ -212,8 +212,8 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
                 Log.e(TAG, "fiatTotalAmount is null");
                 return;
             }
-            mFiatTotal.setText(CurrencyUtils.getFormattedAmount(HomeActivity.this,
-                    BRSharedPrefs.getPreferredFiatIso(HomeActivity.this), aggregatedFiatBalance));
+//            mFiatTotal.setText(CurrencyUtils.getFormattedAmount(HomeActivity.this,
+//                    BRSharedPrefs.getPreferredFiatIso(HomeActivity.this), aggregatedFiatBalance));
         });
         mViewModel.getNotificationLiveData().observe(this, notification -> {
             if (notification != null) {
@@ -590,7 +590,9 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
                 JSONObject obj = new JSONObject(arr.get(i).toString());
                 String address = obj.getString("address");
                 String name = obj.getString("cid");
-                list.add(new Cid(address, name));
+                if (!name.isEmpty()) {
+                    list.add(new Cid(address, name));
+                }
             }
         } catch (JSONException e) {
             Log.e("####", "ERROR getCid: " + e.toString());
