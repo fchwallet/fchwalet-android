@@ -267,4 +267,7 @@ public interface BaseWalletManager {
     String getUtxo();
 
     byte[] signMessage(byte[] script, byte[] phrase, byte[] data);
+
+    String verifyMessage(byte[] data, byte[] signature);
+
 }

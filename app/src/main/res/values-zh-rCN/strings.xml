@@ -1191,5 +1191,16 @@
     <string name="sign_message">待签名消息</string>
     <string name="monitor_address">地址监控</string>
     <string name="own_address">本钱包地址</string>
+    <string name="clear_cache">清除缓存</string>
+    <string name="clear_complete">清除完成，请重启钱包</string>
+    <string name="verify">验证</string>
+    <string name="verify_success">验证成功</string>
+    <string name="verify_fail">验证失败</string>
+    <string name="format_error">格式错误</string>
+    <string name="format_example">验证内容请遵循以下规则:\n
+        签名内容----地址----签名结果\n
+        如: freecash----FBJeDGU1wTTaAuqJKERWyE1DLrxnps5sCe----IOZuBx8CqFbYDhiHeXELoqwe/OkHqN/B+kjqmhGdfk9CXfvht9rpXHwSRyCdAt319tDyoK6pOsLt79nn0wTqqA8=
+    </string>
+
 
 </resources>

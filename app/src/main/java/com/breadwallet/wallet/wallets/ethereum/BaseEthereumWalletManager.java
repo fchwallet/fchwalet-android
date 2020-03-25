@@ -148,4 +148,9 @@ public abstract class BaseEthereumWalletManager implements BaseWalletManager {
     public byte[] signMessage(byte[] script, byte[] phrase, byte[] data) {
         return new byte[]{};
     }
+
+    @Override
+    public String verifyMessage(byte[] data, byte[] signature) {
+        return null;
+    }
 }

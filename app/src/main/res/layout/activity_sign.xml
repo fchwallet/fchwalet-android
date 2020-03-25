@@ -11,14 +11,34 @@
         android:layout_margin="20dp"
         android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp"
-            android:text="@string/signature"/>
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tab_sign"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_top_corner"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="@string/signature"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/tab_verify"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_top_corner_unselected"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="@string/verify"
+                android:textSize="18sp" />
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -27,6 +47,7 @@
             android:padding="14dp">
 
             <TextView
+                android:id="@+id/view1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="5dp"
@@ -39,6 +60,14 @@
                 android:layout_height="wrap_content"
                 android:padding="5dp"
                 android:background="@drawable/bg_create_cid"/>
+
+            <TextView
+                android:id="@+id/view3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="@string/format_example"
+                android:visibility="gone"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -75,6 +104,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@id/view2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"

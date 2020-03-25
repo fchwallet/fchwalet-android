@@ -1055,4 +1055,9 @@ public abstract class BaseBitcoinWalletManager extends BRCoreWalletManager imple
     public byte[] signMessage(byte[] script, byte[] phrase, byte[] data) {
         return getWallet().signMessage(script, phrase, data);
     }
+
+    @Override
+    public String verifyMessage(byte[] data, byte[] signature) {
+        return getWallet().verifyMessage(data, signature);
+    }
 }

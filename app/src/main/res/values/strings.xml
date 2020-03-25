@@ -1246,5 +1246,15 @@
     <string name="sign_message">Message</string>
     <string name="monitor_address">Monitor Address</string>
     <string name="own_address">Your Wallet Address</string>
+    <string name="clear_cache">Clear Cache</string>
+    <string name="clear_complete">Clear Complete, Please Restart Wallet</string>
+    <string name="verify">Verify</string>
+    <string name="verify_success">Verify Success</string>
+    <string name="verify_fail">Verify Fail</string>
+    <string name="format_error">Format Error</string>
+    <string name="format_example">The message must follow the format:\n
+        message----address----signature\n
+        e.g. freecash----FBJeDGU1wTTaAuqJKERWyE1DLrxnps5sCe----IOZuBx8CqFbYDhiHeXELoqwe/OkHqN/B+kjqmhGdfk9CXfvht9rpXHwSRyCdAt319tDyoK6pOsLt79nn0wTqqA8=
+    </string>
 
 </resources>
