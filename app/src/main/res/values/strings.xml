@@ -1257,4 +1257,7 @@
         e.g. freecash----FBJeDGU1wTTaAuqJKERWyE1DLrxnps5sCe----IOZuBx8CqFbYDhiHeXELoqwe/OkHqN/B+kjqmhGdfk9CXfvht9rpXHwSRyCdAt319tDyoK6pOsLt79nn0wTqqA8=
     </string>
 
+    <string name="wallet_address">Addresses</string>
+    <string name="copy_address">Address copied to clipboard</string>
+
 </resources>

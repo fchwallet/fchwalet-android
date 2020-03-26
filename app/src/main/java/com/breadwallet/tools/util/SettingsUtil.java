@@ -22,6 +22,7 @@ import com.breadwallet.fch.Cid;
 import com.breadwallet.fch.SpUtil;
 import com.breadwallet.fch.Utxo;
 import com.breadwallet.platform.pricealert.PriceAlertWorker;
+import com.breadwallet.presenter.activities.AddressListActivity;
 import com.breadwallet.presenter.activities.InputPinActivity;
 import com.breadwallet.presenter.activities.ManageWalletsActivity;
 import com.breadwallet.presenter.activities.MonitorAddressActivity;
@@ -136,6 +137,11 @@ public final class SettingsUtil {
             activity.startActivity(intent);
         }, false, R.drawable.ic_reward));
 
+        settingsItems.add(new BRSettingsItem(activity.getString(R.string.wallet_address), "", view -> {
+            Intent intent = new Intent(activity, AddressListActivity.class);
+            activity.startActivity(intent);
+        }, false, R.drawable.ic_atm_finder));
+
         settingsItems.add(new BRSettingsItem(activity.getString(R.string.clear_cache), "", view -> {
             clear(activity);
         }, false, R.drawable.ic_about));
@@ -167,24 +173,6 @@ public final class SettingsUtil {
             }
         }, false, 0));
 
-//        final WalletBitcoinManager walletBitcoinManager = WalletBitcoinManager.getInstance(activity);
-//        String bitcoinSettingsLabel = String.format("%s %s", walletBitcoinManager.getName(), activity.getString(R.string.Settings_title));
-//        items.add(new BRSettingsItem(bitcoinSettingsLabel, null, view -> {
-//            BRSharedPrefs.putCurrentWalletCurrencyCode(activity, walletBitcoinManager.getCurrencyCode());
-//            startCurrencySettings(activity);
-//        }, false, 0));
-//        final WalletBchManager walletBchManager = WalletBchManager.getInstance(activity);
-//        String bchSettingsLabel = String.format("%s %s", walletBchManager.getName(), activity.getString(R.string.Settings_title));
-
-//        items.add(new BRSettingsItem(bchSettingsLabel, null, view -> {
-//            BRSharedPrefs.putCurrentWalletCurrencyCode(activity, walletBchManager.getCurrencyCode());
-//            startCurrencySettings(activity);
-//        }, false, 0));
-//        items.add(new BRSettingsItem(activity.getString(R.string.Prompts_ShareData_title), null, view -> {
-//            Intent intent = new Intent(activity, ShareDataActivity.class);
-//            activity.startActivity(intent);
-//            activity.overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
-//        }, false, 0));
         items.add(new BRSettingsItem(activity.getString(R.string.Settings_notifications), null, view -> {
             NotificationsSettingsActivity.Companion.start(activity);
         }, false, 0));
