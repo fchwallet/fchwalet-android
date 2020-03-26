@@ -47,8 +47,7 @@ public class SendActivity extends BRActivity {
     private TextView mTvBalance;
     private TextView mTvPaste;
     private TextView mSend;
-    private EditText mEtAddress;
-    private EditText mEtAmount;
+    private EditText mEtAddress, mEtAmount, mEtMemo;
 
     private CidSpinnerAdapter mAdapter;
     private String mAddress, mTarget;
@@ -65,6 +64,7 @@ public class SendActivity extends BRActivity {
         mSend = findViewById(R.id.send_send);
         mEtAddress = findViewById(R.id.send_address);
         mEtAmount = findViewById(R.id.send_amount);
+        mEtMemo = findViewById(R.id.send_memo);
 
         mWalletManager = WalletsMaster.getInstance().getCurrentWallet(this);
         mDataCache = mDataCache.getInstance();
@@ -90,6 +90,13 @@ public class SendActivity extends BRActivity {
 
             }
         });
+        String a = getIntent().getStringExtra("address");
+        for (int i = 0; i < addresses.size(); ++i) {
+            if (a.equalsIgnoreCase(addresses.get(i))) {
+                mSpinner.setSelection(i);
+                break;
+            }
+        }
 
         mTvPaste.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,7 +138,11 @@ public class SendActivity extends BRActivity {
     private boolean prepareUtxo(int amount) {
         List<Utxo> list = mDataCache.getUtxoList();
         mTotal = 0;
-        mFee = 500;
+        if (mEtMemo.getText().toString().trim().isEmpty()) {
+            mFee = 500;
+        } else {
+            mFee = 1000;
+        }
         mUtxos.clear();
         for (Utxo u : list) {
             if (u.getAddress().equalsIgnoreCase(mAddress)) {
@@ -179,6 +190,19 @@ public class SendActivity extends BRActivity {
         if (mCharge > WalletFchManager.DUST) {
             BRCoreTransactionOutput charge = new BRCoreTransactionOutput(mCharge, inScript);
             tx.addOutput(charge);
+        }
+
+        String memo = mEtMemo.getText().toString().trim();
+        if (!memo.isEmpty()) {
+            String hexData = stringToHex(memo);
+            int len = hexData.length() / 2;
+            if (len < 16) {
+                hexData = "6a0" + Integer.toHexString(len) + hexData;
+            } else {
+                hexData = "6a" + Integer.toHexString(len) + hexData;
+            }
+            BRCoreTransactionOutput dataOut = new BRCoreTransactionOutput(0, Utils.hexToBytes(hexData));
+            tx.addOutput(dataOut);
         }
 
         CryptoTransaction transaction = new CryptoTransaction(tx);
@@ -240,6 +264,16 @@ public class SendActivity extends BRActivity {
         mDataCache.setBalance(map);
         mDataCache.setTotalBalance(balance);
         mDataCache.setUtxoList(utxos);
+    }
+
+    private String stringToHex(String s) {
+        String str = "";
+        for (int i = 0; i < s.length(); i++) {
+            int ch = s.charAt(i);
+            String s4 = Integer.toHexString(ch);
+            str = str + s4;
+        }
+        return str;
     }
 
 }

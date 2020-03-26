@@ -96,11 +96,22 @@
                 android:textColor="@color/black"
                 android:textSize="18sp" />
 
+            <EditText
+                android:id="@+id/send_memo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/Send.descriptionLabel"
+                android:layout_marginTop="10dp"
+                android:padding="10dp"
+                android:background="@drawable/bg_create_cid"
+                android:textColor="@color/black"
+                android:textSize="18sp" />
+
         </LinearLayout>
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="80dp" />
+            android:layout_height="70dp" />
 
         <TextView
             android:id="@+id/send_send"

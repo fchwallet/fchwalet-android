@@ -1,6 +1,9 @@
 package com.breadwallet.presenter.activities;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,19 +14,27 @@ import android.widget.TextView;
 import com.breadwallet.R;
 import com.breadwallet.fch.Cid;
 import com.breadwallet.fch.DataCache;
+import com.breadwallet.fch.TxHistoryTask;
 import com.breadwallet.presenter.activities.util.BRActivity;
 import com.breadwallet.presenter.entities.TxUiHolder;
 import com.breadwallet.tools.animation.UiUtils;
+import com.breadwallet.tools.util.Utils;
 import com.breadwallet.ui.wallet.TransactionListAdapter;
 import com.breadwallet.wallet.WalletsMaster;
 import com.breadwallet.wallet.abstracts.BaseWalletManager;
 import com.breadwallet.wallet.wallets.bitcoin.WalletFchManager;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CidDetailActivity extends BRActivity {
+
+    public static final String ACTIVITY_ACTION = "ACTIVITY_ACTION";
+    public static final String ACTION_HISTORY = "ACTION_HISTORY";
 
     private BaseWalletManager mWalletManager;
     private DataCache mDataCache;
@@ -34,6 +45,9 @@ public class CidDetailActivity extends BRActivity {
     private TextView mSend, mReceive, mSign;
     private RecyclerView mRecyclerView;
     private TransactionListAdapter mAdapter;
+
+    private BroadcastReceiver mReceiver;
+    private int mPage = 1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,6 +67,20 @@ public class CidDetailActivity extends BRActivity {
         mCid = mDataCache.getCidList().get(position);
         mName.setText(mCid.getName());
 
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(ACTION_HISTORY)) {
+                    String data = intent.getStringExtra("history");
+                    refreshHistory(data);
+                }
+            }
+        };
+
+        IntentFilter filter = new IntentFilter(ACTIVITY_ACTION);
+        filter.addAction(ACTION_HISTORY);
+        registerReceiver(mReceiver, filter);
+
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mAdapter = new TransactionListAdapter(this, null, new TransactionListAdapter.OnItemClickListener() {
             @Override
@@ -60,12 +88,13 @@ public class CidDetailActivity extends BRActivity {
 
             }
         });
-        mRecyclerView.setAdapter(mAdapter);
 
+        mRecyclerView.setAdapter(mAdapter);
         mSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(CidDetailActivity.this, SendActivity.class);
+                i.putExtra("address", mCid.getAddress());
                 startActivity(i);
             }
         });
@@ -83,13 +112,41 @@ public class CidDetailActivity extends BRActivity {
                 startActivity(i);
             }
         });
+
+        new TxHistoryTask(this, mCid.getAddress(), mPage).execute();
     }
 
-    private void initTxHistory() {
+    private void refreshHistory(String data) {
+        List<String> hashs = new ArrayList<String>();
+        try {
+            JSONArray arr = new JSONArray(data);
+            for (int i = 0; i < arr.length(); ++i) {
+                JSONObject obj = new JSONObject(arr.get(i).toString());
+                int status = obj.getInt("status");
+                if (status == 0) {
+                    continue;
+                }
+                String txid = obj.getString("txid");
+                txid = Utils.reverse(txid);
+                if (!hashs.contains(txid)) {
+                    hashs.add(txid);
+                }
+            }
+        } catch (Exception e) {
+
+        }
+
         List<TxUiHolder> list = new ArrayList<TxUiHolder>();
         for (TxUiHolder tx : mWalletManager.getTxUiHolders(getApplication())) {
             if (tx.getTo().equalsIgnoreCase(mCid.getAddress())) {
                 list.add(tx);
+            } else {
+                for (String h : hashs) {
+                    if (h.equalsIgnoreCase(Utils.bytesToHex(tx.getTxHash()))) {
+                        list.add(tx);
+                        break;
+                    }
+                }
             }
         }
         mAdapter.setItems(list);
@@ -105,6 +162,11 @@ public class CidDetailActivity extends BRActivity {
         } else {
             mBalance.setText("0");
         }
-        initTxHistory();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mReceiver);
     }
 }
