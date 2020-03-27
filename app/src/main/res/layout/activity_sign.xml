@@ -92,7 +92,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:text="@string/Send.pasteLabel"
+                    android:text="@string/Send.scanLabel"
                     android:background="@drawable/bg_detail_cid"
                     android:textColor="@color/white"
                     android:paddingLeft="10dp"
@@ -138,6 +138,14 @@
             </LinearLayout>
 
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_url"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            android:layout_marginLeft="10dp"/>
 
         <View
             android:layout_width="match_parent"

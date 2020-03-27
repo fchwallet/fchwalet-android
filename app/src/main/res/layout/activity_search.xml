@@ -4,10 +4,21 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/Search.search"
+        android:layout_margin="20dp"
+        android:textColor="@color/white"
+        android:textSize="18sp" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
         android:orientation="horizontal">
 
         <EditText
@@ -17,14 +28,14 @@
             android:layout_weight="1"
             android:background="@drawable/bg_create_cid"
             android:hint="@string/search_cid"
-            android:padding="10dp"
+            android:padding="8dp"
             android:lines="1"
             android:textColor="@color/black" />
 
         <ImageView
             android:id="@+id/iv_search"
-            android:layout_width="25dp"
-            android:layout_height="25dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:layout_gravity="center"
             android:layout_marginLeft="10dp"
             android:src="@drawable/ic_search" />

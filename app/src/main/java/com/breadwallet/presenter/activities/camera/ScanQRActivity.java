@@ -1,11 +1,9 @@
 package com.breadwallet.presenter.activities.camera;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PointF;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -16,11 +14,11 @@ import android.widget.ImageView;
 
 import com.breadwallet.R;
 import com.breadwallet.presenter.activities.HomeActivity;
+import com.breadwallet.presenter.activities.SignActivity;
 import com.breadwallet.presenter.activities.util.BRActivity;
 import com.breadwallet.tools.animation.SpringAnimator;
 import com.breadwallet.tools.manager.AppEntryPointHandler;
 import com.breadwallet.tools.qrcode.QRCodeReaderView;
-import com.breadwallet.tools.util.BRConstants;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -191,8 +189,13 @@ public class ScanQRActivity extends BRActivity implements ActivityCompat.OnReque
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mCameraGuide.setImageResource(R.drawable.cameraguide_red);
-                        mLastUpdated = System.currentTimeMillis();
+//                        mCameraGuide.setImageResource(R.drawable.cameraguide_red);
+//                        mLastUpdated = System.currentTimeMillis();
+                        Intent i = new Intent(SignActivity.ACTIVITY_ACTION);
+                        i.setAction(SignActivity.ACTION_SCAN);
+                        i.putExtra("url", url);
+                        sendBroadcast(i);
+                        finish();
                     }
                 });
                 return false;
