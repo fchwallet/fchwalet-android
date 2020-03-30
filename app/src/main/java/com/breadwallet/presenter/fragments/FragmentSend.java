@@ -721,7 +721,7 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
             mSelectedCurrencyCode = wm.getCurrencyCode();
 //        BigDecimal mCurrentBalance = wm.getBalance();
 
-        int tb = mDataCache.getTotalBalance();
+        long tb = mDataCache.getTotalBalance();
         BigDecimal mCurrentBalance = new BigDecimal(tb);
         if (!mIsAmountLabelShown) {
             mCurrencyCode.setText(CurrencyUtils.getSymbolByIso(context, mSelectedCurrencyCode));
@@ -952,16 +952,16 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
 
     private DataCache mDataCache;
     private String mAddress = "";
-    private int mCharge = 0;
+    private long mCharge = 0;
 
-    private BRCoreTransaction buildTx(String target, int amount) {
+    private BRCoreTransaction buildTx(String target, long amount) {
         BRCoreTransaction tx = new BRCoreTransaction();
         byte[] empty = new byte[]{};
         long sequence = 4294967295L;
 
         List<Utxo> utxos = mDataCache.getUtxoList();
-        int total = 0;
-        int fee = 500;
+        long total = 0;
+        long fee = 500;
         for (Utxo u : utxos) {
             String s = Utils.reverse(u.getTxid());
             byte[] hash = Utils.hexToBytes(s);
@@ -1009,7 +1009,7 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
         mDataCache.setSpendTxid(txs);
         SpUtil.putTxid(activity, txs);
 
-        Map<String, Integer> map = new HashMap<String, Integer>();
+        Map<String, Long> map = new HashMap<String, Long>();
         if (mCharge > WalletFchManager.DUST) {
             Utxo charge = new Utxo(txid, mAddress, mCharge, 1);
             pending.add(charge);

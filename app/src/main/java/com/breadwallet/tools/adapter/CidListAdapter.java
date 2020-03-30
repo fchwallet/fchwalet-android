@@ -75,9 +75,9 @@ public class CidListAdapter extends RecyclerView.Adapter<CidListAdapter.CidViewH
             Cid cid = mList.get(position);
             decoratedHolderView.mName.setText(cid.getName());
 
-            Map<String, Integer> m = DataCache.getInstance().getBalance();
+            Map<String, Long> m = DataCache.getInstance().getBalance();
             if (m.containsKey(cid.getAddress())) {
-                int balance = m.get(cid.getAddress());
+                long balance = m.get(cid.getAddress());
                 BigDecimal bd = new BigDecimal(balance).divide(WalletFchManager.ONE_FCH_BD);
                 decoratedHolderView.mBalance.setText(bd.toString());
             } else {

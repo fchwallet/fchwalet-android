@@ -11,10 +11,10 @@ public class DataCache {
     private List<Utxo> mUtxoList = new ArrayList<Utxo>();
     private List<Cid> mCidList = new ArrayList<Cid>();
     private List<String> mAddressList = new ArrayList<String>();
-    private Map<String, Integer> mBalance = new HashMap<String, Integer>();
+    private Map<String, Long> mBalance = new HashMap<String, Long>();
     private List<String> mSpendTxid = new ArrayList<String>();
     private List<Utxo> mPendingList = new ArrayList<Utxo>();
-    private int mTotalBalance = 0;
+    private long mTotalBalance = 0;
 
     public static DataCache getInstance() {
         if (mInstance == null) {
@@ -35,7 +35,7 @@ public class DataCache {
         return mAddressList;
     }
 
-    public Map<String, Integer> getBalance() {
+    public Map<String, Long> getBalance() {
         return mBalance;
     }
 
@@ -47,7 +47,7 @@ public class DataCache {
         return mPendingList;
     }
 
-    public int getTotalBalance() {
+    public long getTotalBalance() {
         return mTotalBalance;
     }
 
@@ -63,7 +63,7 @@ public class DataCache {
         this.mAddressList = list;
     }
 
-    public void setBalance(Map<String, Integer> map) {
+    public void setBalance(Map<String, Long> map) {
         this.mBalance = map;
     }
 
@@ -75,7 +75,7 @@ public class DataCache {
         this.mPendingList = list;
     }
 
-    public void setTotalBalance(int balance) {
+    public void setTotalBalance(long balance) {
         this.mTotalBalance = balance;
     }
 }

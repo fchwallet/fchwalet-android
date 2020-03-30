@@ -7,17 +7,17 @@ public class Utxo {
 
     private String txid;
     private String address;
-    private int amount;
+    private long amount;
     private int vout;
 
-    public Utxo(String txid, String address, int amount, int vout) {
+    public Utxo(String txid, String address, long amount, int vout) {
         this.txid = txid;
         this.address = address;
         this.amount = amount;
         this.vout = vout;
     }
 
-    public int getAmount() {
+    public long getAmount() {
         return amount;
     }
 
@@ -37,7 +37,7 @@ public class Utxo {
         this.address = address;
     }
 
-    public void setAmount(int amount) {
+    public void setAmount(long amount) {
         this.amount = amount;
     }
 

@@ -31,6 +31,9 @@ import com.breadwallet.wallet.WalletsMaster;
 import com.breadwallet.wallet.abstracts.BaseWalletManager;
 import com.platform.tools.BRBitId;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.List;
 
 public class SignActivity extends BRActivity {
@@ -59,16 +62,21 @@ public class SignActivity extends BRActivity {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(ACTION_SCAN)) {
                 String data = intent.getStringExtra("url");
-                int msgIndex = data.indexOf("msg:");
-                int urlIndex = data.indexOf("url:");
+                int msgIndex = data.indexOf("msg");
+                int urlIndex = data.indexOf("url");
                 if (msgIndex == -1 || urlIndex == -1) {
                     mEtMessage.setText(data);
                 } else {
-                    String message = data.substring(msgIndex + 4, msgIndex + 14);
-                    String url = data.substring(urlIndex + 4);
-                    mEtMessage.setText(message);
-                    mCallback = url;
-                    mTvUrl.setText(mCallback);
+                    try {
+                        JSONObject obj = new JSONObject(data);
+                        String message = obj.getString("msg");
+                        String url =  obj.getString("url");
+                        mEtMessage.setText(message);
+                        mCallback = url;
+                        mTvUrl.setText(mCallback);
+                    } catch (JSONException e) {
+
+                    }
                 }
             } else if (intent.getAction().equals(ACTION_CALLBACK)) {
                 String res = intent.getStringExtra("callback");

@@ -51,7 +51,7 @@ public class SendActivity extends BRActivity {
 
     private CidSpinnerAdapter mAdapter;
     private String mAddress, mTarget;
-    private int mTotal, mFee, mCharge;
+    private long mTotal, mFee, mCharge;
     private List<Utxo> mUtxos = new ArrayList<Utxo>();
 
     @Override
@@ -77,7 +77,7 @@ public class SendActivity extends BRActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long l) {
                 mAddress = addresses.get(pos);
                 if (mDataCache.getBalance().containsKey(mAddress)) {
-                    int balance = mDataCache.getBalance().get(mAddress);
+                    long balance = mDataCache.getBalance().get(mAddress);
                     BigDecimal bd = new BigDecimal(balance).divide(WalletFchManager.ONE_FCH_BD);
                     mTvBalance.setText(String.format(getString(R.string.balance_format), bd.doubleValue()));
                 } else {
@@ -155,7 +155,7 @@ public class SendActivity extends BRActivity {
     }
 
     private void buildTx(int amount) {
-        Map<String, Integer> map = mDataCache.getBalance();
+        Map<String, Long> map = mDataCache.getBalance();
         if (!map.containsKey(mAddress) || map.get(mAddress) < amount) {
             Toast.makeText(SendActivity.this, R.string.toast_balance, Toast.LENGTH_SHORT).show();
             return;
@@ -227,8 +227,8 @@ public class SendActivity extends BRActivity {
         List<String> txs = mDataCache.getSpendTxid();
         List<Utxo> pending = mDataCache.getPendingList();
         List<Utxo> utxos = mDataCache.getUtxoList();
-        Map<String, Integer> map = mDataCache.getBalance();
-        int balance = mDataCache.getTotalBalance();
+        Map<String, Long> map = mDataCache.getBalance();
+        long balance = mDataCache.getTotalBalance();
 
         for (Utxo u : mUtxos) {
             String s = u.getTxid() + u.getVout();
@@ -255,7 +255,7 @@ public class SendActivity extends BRActivity {
             BigDecimal bd = new BigDecimal(mCharge).divide(WalletFchManager.ONE_FCH_BD);
             mTvBalance.setText(String.format(getString(R.string.balance_format), bd.doubleValue()));
         } else {
-            map.put(mAddress, 0);
+            map.put(mAddress, 0l);
             mTvBalance.setText(String.format(getString(R.string.balance_format), 0));
         }
         mDataCache.setPendingList(pending);

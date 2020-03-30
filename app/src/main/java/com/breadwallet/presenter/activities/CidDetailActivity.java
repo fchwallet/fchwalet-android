@@ -137,6 +137,9 @@ public class CidDetailActivity extends BRActivity {
         }
 
         List<TxUiHolder> list = new ArrayList<TxUiHolder>();
+        if (mWalletManager.getTxUiHolders(getApplication()) == null)
+            return;
+
         for (TxUiHolder tx : mWalletManager.getTxUiHolders(getApplication())) {
             if (tx.getTo().equalsIgnoreCase(mCid.getAddress())) {
                 list.add(tx);

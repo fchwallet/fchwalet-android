@@ -248,7 +248,7 @@ public class WalletActivity extends BRActivity implements InternetManager.Connec
 //                mBalancePrimary.setText(balance.getFiatBalance());
 //                mBalanceSecondary.setText(balance.getCryptoBalance());
 
-                int tb = DataCache.getInstance().getTotalBalance();
+                long tb = DataCache.getInstance().getTotalBalance();
                 BigDecimal crypto = new BigDecimal(tb).divide(WalletFchManager.ONE_FCH_BD);
                 BigDecimal fiat = crypto.multiply(new BigDecimal(SpUtil.get(this, SpUtil.KEY_PRICE)));
                 String fiatString = CurrencyUtils.getFormattedAmount(this,

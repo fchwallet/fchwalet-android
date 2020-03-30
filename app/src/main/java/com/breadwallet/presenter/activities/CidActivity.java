@@ -40,8 +40,8 @@ public class CidActivity extends BRActivity {
 
     private final static String TARGET = "F9A9TgNE2ixYhQmEnB15BNYcEuCvZvzqxT";
     private final static String PRE_DATA = "FEIP|3|1|";
-    private final static int MIN_BALANCE = 1010000;
-    private final static int TARGET_BALANCE = 1000000;
+    private final static long MIN_BALANCE = 1010000;
+    private final static long TARGET_BALANCE = 1000000;
 
     private BaseWalletManager mWalletManager;
     private DataCache mDataCache;
@@ -58,9 +58,7 @@ public class CidActivity extends BRActivity {
     private String mAddress;
     private String mName = "";
     private String mTag = "";
-    private int mTotal;
-    private int mFee;
-    private int mCharge;
+    private long mTotal, mFee, mCharge;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -87,7 +85,7 @@ public class CidActivity extends BRActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long l) {
                 mAddress = addresses.get(pos);
                 if (mDataCache.getBalance().containsKey(mAddress)) {
-                    int balance = mDataCache.getBalance().get(mAddress);
+                    long balance = mDataCache.getBalance().get(mAddress);
                     BigDecimal bd = new BigDecimal(balance).divide(WalletFchManager.ONE_FCH_BD);
                     mTvBalance.setText(String.format(getString(R.string.balance_format), bd.doubleValue()));
                 } else {
@@ -104,7 +102,7 @@ public class CidActivity extends BRActivity {
         mBtnCreate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Map<String, Integer> map = mDataCache.getBalance();
+                Map<String, Long> map = mDataCache.getBalance();
                 if (!map.containsKey(mAddress) || map.get(mAddress) < MIN_BALANCE) {
                     Toast.makeText(CidActivity.this, R.string.toast_balance, Toast.LENGTH_SHORT).show();
                     return;

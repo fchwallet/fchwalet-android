@@ -366,8 +366,8 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
     private List<String> mAddressList = new ArrayList<String>();
     private String mAddressString = "";
     private List<Utxo> mUtxoList = new ArrayList<Utxo>();
-    private Map<String, Integer> mBalanceMap = new HashMap<String, Integer>();
-    private int mTotalBalance = 0;
+    private Map<String, Long> mBalanceMap = new HashMap<String, Long>();
+    private long mTotalBalance = 0;
 
     private void initBroadcast() {
         mReceiver = new BroadcastReceiver() {
@@ -519,7 +519,7 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
                 String address = obj.getString("address");
                 String a = obj.getString("amount");
                 BigDecimal bd = new BigDecimal(a).multiply(WalletFchManager.ONE_FCH_BD);
-                int amount = bd.intValue();
+                long amount = bd.longValue();
                 Utxo u = new Utxo(txid, address, amount, vout);
                 temp.add(u);
             }
@@ -558,8 +558,8 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
         mTotalBalance = 0;
         for (Utxo u : mUtxoList) {
             String address = u.getAddress();
-            int amount = u.getAmount();
-            int value = amount;
+            long amount = u.getAmount();
+            long value = amount;
             if (mBalanceMap.containsKey(address)) {
                 value += mBalanceMap.get(address);
             }
