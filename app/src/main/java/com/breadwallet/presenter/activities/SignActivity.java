@@ -210,7 +210,7 @@ public class SignActivity extends BRActivity {
         byte[] data = BRBitId.getMessageHash(message);
         byte[] res = mWalletManager.signMessage(script, mRawPhrase, data);
         String signature = Base64.encodeToString(res, Base64.NO_WRAP);
-        mTvResult.setText(signature);
+        mTvResult.setText(message + "----" + mAddress + "----" + signature);
         mSigning = false;
 
         if (!mCallback.isEmpty()) {

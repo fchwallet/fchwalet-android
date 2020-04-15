@@ -22,6 +22,7 @@ import com.breadwallet.fch.SpUtil;
 import com.breadwallet.fch.Utxo;
 import com.breadwallet.presenter.activities.util.BRActivity;
 import com.breadwallet.presenter.entities.CryptoRequest;
+import com.breadwallet.tools.animation.BRDialog;
 import com.breadwallet.tools.animation.UiUtils;
 import com.breadwallet.tools.manager.SendManager;
 import com.breadwallet.tools.threads.executor.BRExecutor;
@@ -155,6 +156,10 @@ public class CidActivity extends BRActivity {
         tx.addOutput(out);
 
         mCharge = mTotal - mFee - TARGET_BALANCE;
+        if (mFee > WalletFchManager.MAX_FEE) {
+            BRDialog.showSimpleDialog(CidActivity.this, "Failed", "Too Many Fee");
+            return;
+        }
         if (mCharge > WalletFchManager.DUST) {
             BRCoreTransactionOutput charge = new BRCoreTransactionOutput(mCharge, inScript);
             tx.addOutput(charge);

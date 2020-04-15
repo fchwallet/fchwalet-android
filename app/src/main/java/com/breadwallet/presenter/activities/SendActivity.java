@@ -120,7 +120,7 @@ public class SendActivity extends BRActivity {
                         Toast.makeText(SendActivity.this, R.string.Send_containsAddress, Toast.LENGTH_LONG).show();
                     } else {
                         BigDecimal bd = new BigDecimal(amount).multiply(WalletFchManager.ONE_FCH_BD);
-                        buildTx(bd.intValue());
+                        buildTx(bd.longValue());
                     }
                 } else {
                     BRDialog.showCustomDialog(SendActivity.this, "", getResources().getString(R.string.Send_invalidAddressTitle),
@@ -135,7 +135,7 @@ public class SendActivity extends BRActivity {
         });
     }
 
-    private boolean prepareUtxo(int amount) {
+    private boolean prepareUtxo(long amount) {
         List<Utxo> list = mDataCache.getUtxoList();
         mTotal = 0;
         if (mEtMemo.getText().toString().trim().isEmpty()) {
@@ -154,7 +154,7 @@ public class SendActivity extends BRActivity {
         return mTotal >= (mFee + amount);
     }
 
-    private void buildTx(int amount) {
+    private void buildTx(long amount) {
         Map<String, Long> map = mDataCache.getBalance();
         if (!map.containsKey(mAddress) || map.get(mAddress) < amount) {
             Toast.makeText(SendActivity.this, R.string.toast_balance, Toast.LENGTH_SHORT).show();
@@ -167,7 +167,7 @@ public class SendActivity extends BRActivity {
         createCid(amount);
     }
 
-    private void createCid(int amount) {
+    private void createCid(long amount) {
         BRCoreTransaction tx = new BRCoreTransaction();
         byte[] empty = new byte[]{};
         long sequence = 4294967295L;
@@ -187,6 +187,10 @@ public class SendActivity extends BRActivity {
         tx.addOutput(out);
 
         mCharge = mTotal - mFee - amount;
+        if (mFee > WalletFchManager.MAX_FEE) {
+            BRDialog.showSimpleDialog(SendActivity.this, "Failed", "Too Many Fee");
+            return;
+        }
         if (mCharge > WalletFchManager.DUST) {
             BRCoreTransactionOutput charge = new BRCoreTransactionOutput(mCharge, inScript);
             tx.addOutput(charge);

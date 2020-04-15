@@ -475,11 +475,11 @@ public class SendManager {
             return;
         }
 
-        TxConfirmationDetail confirmationDetail = createConfirmation(ctx, request, wm);
-        if (confirmationDetail == null) {
-            BRDialog.showSimpleDialog(ctx, "Failed", "Confirmation message failed");
-            return;
-        }
+//        TxConfirmationDetail confirmationDetail = createConfirmation(ctx, request, wm);
+//        if (confirmationDetail == null) {
+//            BRDialog.showSimpleDialog(ctx, "Failed", "Confirmation message failed");
+//            return;
+//        }
 
         if (!(ctx instanceof Activity)) {
             return;
@@ -488,31 +488,46 @@ public class SendManager {
 
         final boolean forcePin = wm.getTotalSent(ctx).add(request.getAmount()).compareTo(BRKeyStore.getTotalLimit(ctx, wm.getCurrencyCode())) > 0;
 
-        TxDetailConfirmationFragment txDetailFragment = TxDetailConfirmationFragment.Companion.newInstance(
-                confirmationDetail,
-                () -> { // onAccept : request user auth
-                    AuthManager.getInstance().authPrompt(ctx, ctx.getString(R.string.VerifyPin_touchIdMessage), "", forcePin, false, new BRAuthCompletion() {
-                        @Override
-                        public void onComplete() {
-                            BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(() -> {
-                                PostAuth.getInstance().onPublishTxAuth2(ctx, wm, false, completion);
-                                BRExecutor.getInstance().forMainThreadTasks().execute(() -> UiUtils.killAllFragments(host));
-                            });
-                        }
+//        TxDetailConfirmationFragment txDetailFragment = TxDetailConfirmationFragment.Companion.newInstance(
+//                confirmationDetail,
+//                () -> { // onAccept : request user auth
+//                    AuthManager.getInstance().authPrompt(ctx, ctx.getString(R.string.VerifyPin_touchIdMessage), "", forcePin, false, new BRAuthCompletion() {
+//                        @Override
+//                        public void onComplete() {
+//                            BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(() -> {
+//                                PostAuth.getInstance().onPublishTxAuth2(ctx, wm, false, completion);
+//                                BRExecutor.getInstance().forMainThreadTasks().execute(() -> UiUtils.killAllFragments(host));
+//                            });
+//                        }
+//
+//                        @Override
+//                        public void onCancel() {
+//                            //nothing
+//                        }
+//                    });
+//                    return null;
+//                });
 
-                        @Override
-                        public void onCancel() {
-                            //nothing
-                        }
-                    });
-                    return null;
+        AuthManager.getInstance().authPrompt(ctx, ctx.getString(R.string.VerifyPin_touchIdMessage), "", forcePin, false, new BRAuthCompletion() {
+            @Override
+            public void onComplete() {
+                BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(() -> {
+                    PostAuth.getInstance().onPublishTxAuth2(ctx, wm, false, completion);
+                    BRExecutor.getInstance().forMainThreadTasks().execute(() -> UiUtils.killAllFragments(host));
                 });
+            }
 
-        host.getFragmentManager()
-                .beginTransaction()
-                .setCustomAnimations(0, 0, 0, R.animator.plain_300)
-                .add(android.R.id.content, txDetailFragment, FragmentFingerprint.class.getName())
-                .addToBackStack(null)
-                .commit();
+            @Override
+            public void onCancel() {
+                //nothing
+            }
+        });
+
+//        host.getFragmentManager()
+//                .beginTransaction()
+//                .setCustomAnimations(0, 0, 0, R.animator.plain_300)
+//                .add(android.R.id.content, txDetailFragment, FragmentFingerprint.class.getName())
+//                .addToBackStack(null)
+//                .commit();
     }
 }

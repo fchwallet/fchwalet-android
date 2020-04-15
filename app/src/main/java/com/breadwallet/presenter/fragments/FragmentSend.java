@@ -470,7 +470,7 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
                         return;
                     }
 
-                    BRCoreTransaction tx = buildTx(req.getAddress(), cryptoAmount.intValue());
+                    BRCoreTransaction tx = buildTx(req.getAddress(), cryptoAmount.longValue());
                     if (tx == null) {
                         Toast.makeText(activity, "手续费不足", Toast.LENGTH_SHORT).show();
                         return;
@@ -983,6 +983,10 @@ public class FragmentSend extends ModalDialogFragment implements BRKeyboard.OnIn
         tx.addOutput(out);
 
         mCharge = total - fee - amount;
+        if (fee > WalletFchManager.MAX_FEE) {
+            BRDialog.showSimpleDialog(getActivity(), "Failed", "Too Many Fee");
+            return null;
+        }
         if (mCharge > WalletFchManager.DUST) {
             byte[] chargeScript = new BRCoreAddress(mAddress).getPubKeyScript();
             BRCoreTransactionOutput charge = new BRCoreTransactionOutput(mCharge, chargeScript);
