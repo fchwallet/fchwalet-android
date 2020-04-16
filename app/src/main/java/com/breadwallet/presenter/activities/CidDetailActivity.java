@@ -49,7 +49,6 @@ public class CidDetailActivity extends BRActivity {
     private BroadcastReceiver mReceiver;
     private List<TxUiHolder> mTemp = new ArrayList<TxUiHolder>();
     private int mPage = 1;
-    private boolean loadMore = true;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -143,9 +142,6 @@ public class CidDetailActivity extends BRActivity {
         if (mWalletManager.getTxUiHolders(getApplication()) == null) {
             mAdapter.setItems(mTemp);
             mAdapter.notifyDataSetChanged();
-            if (loadMore) {
-                new TxHistoryTask(this, mCid.getAddress(), mPage++).execute();
-            }
             return;
         }
 
@@ -166,12 +162,6 @@ public class CidDetailActivity extends BRActivity {
     }
 
     private void parseHistory(JSONArray arr) throws Exception {
-        String lastTx = "";
-        int lastStatus = 0;
-        if (arr.length() == 0) {
-            loadMore = false;
-        }
-
         for (int i = 0; i < arr.length(); ++i) {
             JSONObject obj = new JSONObject(arr.get(i).toString());
             String height = obj.getString("height");
@@ -180,34 +170,17 @@ public class CidDetailActivity extends BRActivity {
             String txid = obj.getString("txid");
             String value = obj.getString("value");
 
-            if (txid.equalsIgnoreCase(lastTx)) {
-                if (lastStatus == 1) {
-                    continue;
-                }
-                if (status == 1) {
-                    TxUiHolder tx = mTemp.get(mTemp.size() - 1);
-                    tx.setBlockHeight(Integer.parseInt(height));
-                    tx.setReceived(status == 0);
-                    tx.setTimeStamp(Long.parseLong(time));
-                    tx.setTxHash(txid.getBytes());
-                    tx.setAmount(new BigDecimal(value).multiply(WalletFchManager.ONE_FCH_BD));
-                    lastStatus = 1;
-                }
-            } else {
-                TxUiHolder tx = new TxUiHolder();
-                tx.setBlockHeight(Integer.parseInt(height));
-                tx.setReceived(status == 0);
-                tx.setTimeStamp(Long.parseLong(time));
-                tx.setTxHash(txid.getBytes());
-                tx.setAmount(new BigDecimal(value).multiply(WalletFchManager.ONE_FCH_BD));
-                tx.setFrom(mCid.getAddress());
-                tx.setTo(mCid.getAddress());
-                tx.setValid(true);
-                tx.setErrored(false);
-                lastTx = txid;
-                lastStatus = status;
-                mTemp.add(tx);
-            }
+            TxUiHolder tx = new TxUiHolder();
+            tx.setBlockHeight(Integer.parseInt(height));
+            tx.setReceived(status == 0);
+            tx.setTimeStamp(Long.parseLong(time));
+            tx.setTxHash(txid.getBytes());
+            tx.setAmount(new BigDecimal(value).multiply(WalletFchManager.ONE_FCH_BD));
+            tx.setFrom(mCid.getAddress());
+            tx.setTo(mCid.getAddress());
+            tx.setValid(true);
+            tx.setErrored(false);
+            mTemp.add(tx);
         }
     }
 

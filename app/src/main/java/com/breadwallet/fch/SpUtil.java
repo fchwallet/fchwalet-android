@@ -159,7 +159,7 @@ public class SpUtil {
             if (value.length() > 20) {
                 String[] ss = value.split(",");
                 for (int i = 0; i < ss.length; i += 4) {
-                    int amount = Integer.parseInt(ss[i + 2]);
+                    long amount = Long.parseLong(ss[i + 2]);
                     int vout = Integer.parseInt(ss[i + 3]);
                     Utxo u = new Utxo(ss[i], ss[i + 1], amount, vout);
                     list.add(u);

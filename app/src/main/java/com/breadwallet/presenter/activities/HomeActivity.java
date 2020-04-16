@@ -459,6 +459,7 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
             SpUtil.putAddress(this, mAddressList);
 
             int size = mAddressList.size();
+            mAddressString = "";
             for (int i = 0; i < size; ++i) {
                 mAddressString += mAddressList.get(i);
                 if (i != size - 1) {
