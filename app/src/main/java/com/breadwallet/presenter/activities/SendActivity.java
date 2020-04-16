@@ -256,11 +256,11 @@ public class SendActivity extends BRActivity {
             map.put(mAddress, mCharge);
             balance += mCharge;
             utxos.add(charge);
-            BigDecimal bd = new BigDecimal(mCharge).divide(WalletFchManager.ONE_FCH_BD);
+            BigDecimal bd = new BigDecimal(mCharge + "").divide(WalletFchManager.ONE_FCH_BD);
             mTvBalance.setText(String.format(getString(R.string.balance_format), bd.doubleValue()));
         } else {
             map.put(mAddress, 0l);
-            mTvBalance.setText(String.format(getString(R.string.balance_format), 0));
+            mTvBalance.setText(R.string.balance_format_zero);
         }
         mDataCache.setPendingList(pending);
         SpUtil.putPending(this, pending);

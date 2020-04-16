@@ -180,7 +180,7 @@
     <string name="Confirmation.feeLabel">Network Fee:</string>
     <!-- Network Fee: (ETH) -->
     <string name="Confirmation.feeLabelETH">Network Fee (ETH):</string>
-    <!-- eg. Processing time: This transaction is predicted to complete in [10-60 minutes]. -->
+    <!-- eg. Processing time: This transaction is predicted to complete in [1-6 minutes]. -->
     <string name="Confirmation.processingTime">Processing time: This transaction is predicted to complete in %1$s.</string>
     <!-- Label for "send" button on final confirmation screen -->
     <string name="Confirmation.send">Send</string>
@@ -254,7 +254,7 @@
     <string name="FeeSelector.economyTime">1-24 hours</string>
     <!-- Warning message for economy fee -->
     <string name="FeeSelector.economyWarning">This option is not recommended for time-sensitive transactions.</string>
-    <!-- E.g. Estimated delivery: 10-60 minutes -->
+    <!-- E.g. Estimated delivery: 1-6 minutes -->
     <string name="FeeSelector.estimatedDeliver">Estimated Delivery: %1$s</string>
     <!-- [This transaction will complete in] 2-5 minutes -->
     <string name="FeeSelector.ethTime">2-5 minutes</string>
@@ -264,8 +264,8 @@
     <string name="FeeSelector.priorityTime">10-30 minutes</string>
     <!-- Regular fee -->
     <string name="FeeSelector.regular">Regular</string>
-    <!-- E.g. [This transaction is predicted to complete in] 10-60 minutes -->
-    <string name="FeeSelector.regularTime">10-60 minutes</string>
+    <!-- E.g. [This transaction is predicted to complete in] 1-6 minutes -->
+    <string name="FeeSelector.regularTime">1-6 minutes</string>
     <!-- Fee Selector title -->
     <string name="FeeSelector.title">Processing Speed</string>
     <!-- Label for the Android file chooser when we need to prompt the user to select an image file. -->
@@ -1238,6 +1238,7 @@
     <string name="tag">Tag</string>
     <string name="create">Create</string>
     <string name="balance_format">Balance:\t%f FCH</string>
+    <string name="balance_format_zero">Balance:\t0 FCH</string>
     <string name="search_cid">Search CID</string>
     <string name="search_empty">No Related CID Found</string>
     <string name="balance">Balance</string>

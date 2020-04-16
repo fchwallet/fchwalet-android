@@ -538,7 +538,7 @@ public class HomeActivity extends BRActivity implements InternetManager.Connecti
             }
         }
 
-        if (newPending.isEmpty()) {
+        if (!pList.isEmpty() && newPending.isEmpty()) {
             pList.clear();
             txList.clear();
             mDateCache.setPendingList(pList);

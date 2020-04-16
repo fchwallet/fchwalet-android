@@ -180,7 +180,7 @@
     <string name="Confirmation.feeLabel">網絡費：</string>
     <!-- Network Fee: (ETH) -->
     <string name="Confirmation.feeLabelETH">網路費用（ETH）:</string>
-    <!-- eg. Processing time: This transaction is predicted to complete in [10-60 minutes]. -->
+    <!-- eg. Processing time: This transaction is predicted to complete in [1-6 minutes]. -->
     <string name="Confirmation.processingTime">處理時間：該筆交易預計在 %1$s 後完成。</string>
     <!-- Label for "send" button on final confirmation screen -->
     <string name="Confirmation.send">寄送</string>
@@ -254,7 +254,7 @@
     <string name="FeeSelector.economyTime">1-24 小時</string>
     <!-- Warning message for economy fee -->
     <string name="FeeSelector.economyWarning">此選項不建議用於時效性的交易。</string>
-    <!-- E.g. Estimated delivery: 10-60 minutes -->
+    <!-- E.g. Estimated delivery: 1-6 minutes -->
     <string name="FeeSelector.estimatedDeliver">預計發送時間：%1$s</string>
     <!-- [This transaction will complete in] 2-5 minutes -->
     <string name="FeeSelector.ethTime">2-5 分鐘</string>
@@ -264,8 +264,8 @@
     <string name="FeeSelector.priorityTime">10-30 分鐘</string>
     <!-- Regular fee -->
     <string name="FeeSelector.regular">標準</string>
-    <!-- E.g. [This transaction is predicted to complete in] 10-60 minutes -->
-    <string name="FeeSelector.regularTime">10-60 分鐘</string>
+    <!-- E.g. [This transaction is predicted to complete in] 1-6 minutes -->
+    <string name="FeeSelector.regularTime">1-6 分鐘</string>
     <!-- Fee Selector title -->
     <string name="FeeSelector.title">處理速度</string>
     <!-- Label for the Android file chooser when we need to prompt the user to select an image file. -->
