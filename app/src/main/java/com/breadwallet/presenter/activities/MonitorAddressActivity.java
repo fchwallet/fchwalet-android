@@ -141,6 +141,12 @@ public class MonitorAddressActivity extends BRActivity {
                 }
             }
         });
+        findViewById(R.id.back_icon).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
     }
 
     private void initBroadcast() {

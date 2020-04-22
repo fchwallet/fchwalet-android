@@ -52,6 +52,10 @@ public class TxUiHolder {
     private boolean isErrored;
     private String errorDescription;
 
+    public TxUiHolder() {
+
+    }
+
     //todo refactor this useless class
     public TxUiHolder(Object transaction, boolean isReceived, long timeStamp, int blockHeight, byte[] hash, String txReversed,
                       BigDecimal fee, String to, String from,
@@ -165,5 +169,41 @@ public class TxUiHolder {
         int confirms = (blockHeight == Integer.MAX_VALUE || blockHeight == 0) ?
                 0 : BRSharedPrefs.getLastBlockHeight(context, currencyCode) - blockHeight + 1;
         return confirms >= BRConstants.CONFIRMED_BLOCKS_NUMBER;
+    }
+
+    public void setTimeStamp(long timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+
+    public void setBlockHeight(int blockHeight) {
+        this.blockHeight = blockHeight;
+    }
+
+    public void setTxHash(byte[] txHash) {
+        this.txHash = txHash;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
+    }
+
+    public void setTo(String to) {
+        this.to = to;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public void setReceived(boolean received) {
+        isReceived = received;
+    }
+
+    public void setValid(boolean valid) {
+        isValid = valid;
+    }
+
+    public void setErrored(boolean errored) {
+        isErrored = errored;
     }
 }

@@ -7,7 +7,17 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="20dp">
+        android:paddingTop="20dp"
+        android:paddingLeft="15dp"
+        android:paddingRight="20dp"
+        android:paddingBottom="10dp">
+
+        <ImageButton
+            android:id="@+id/back_icon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/ic_chevron_left_white_24dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -19,8 +29,8 @@
 
         <ImageView
             android:id="@+id/iv_add"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:src="@drawable/ic_add_address"/>

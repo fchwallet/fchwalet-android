@@ -46,6 +46,12 @@ public class AddressListActivity extends BRActivity {
             public void onLongItemClick(View view, int position) {
             }
         }));
+        findViewById(R.id.back_icon).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
     }
 
 }

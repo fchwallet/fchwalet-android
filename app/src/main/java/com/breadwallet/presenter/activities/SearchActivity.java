@@ -123,6 +123,12 @@ public class SearchActivity extends BRActivity {
                 new SearchCidTask(getApplicationContext(), mText, mPage).execute();
             }
         });
+        findViewById(R.id.back_icon).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
     }
 
     private void updateList(String data) {
