@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:350203949267:android:48e8b2c1837bbe44",
         "android_client_info": {
-          "package_name": "com.breadwallet.debug"
+          "package_name": "com.fchwallet.debug"
         }
       },
       "oauth_client": [
