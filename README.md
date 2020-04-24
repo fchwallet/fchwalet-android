@@ -1,13 +1,7 @@
-![ƀ](/images/icon.png) breadwallet for Android
+fchwallet for Android
 ----------------------------------
 
-[![Get it on Google Play](/images/icon-google-play.png)](https://play.google.com/store/apps/details?id=com.breadwallet)
-
-### bitcoin done right
-
-This is the Android port of the breadwallet iOS app, which can be found [here](https://github.com/breadwallet/breadwallet/).
-
-### a completely standalone bitcoin wallet
+### a completely standalone fchwalllet
 
 Unlike many other bitcoin wallets, breadwallet is a real standalone bitcoin client. There is no server to get hacked or go down, so you can always access your money. Using [SPV](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients) mode, breadwallet connects directly to the bitcoin network with the fast performance you need on a mobile device.
 
