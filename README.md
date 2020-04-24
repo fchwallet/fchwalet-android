@@ -1,4 +1,4 @@
-fchwallet for Android
+Fchwallet for Android
 ----------------------------------
 
 ### a completely standalone fchwalllet
